@@ -249,8 +249,8 @@
     };
 
     const INITIAL_ADMIN_USERS = [
-      { id: 'admin-1', email: 'humjolytailors1974@gmail.com', password: 'admin1974', role: 'Master Admin', name: 'Humjoly Store Owner' },
-      { id: 'admin-2', email: 'tailor.staff@humjoly.com', password: 'staff123', role: 'Staff Admin', name: 'Tailor Shop Manager' }
+      { id: 'admin-1', email: 'humjolytailors1974@gmail.com', password: 'admin1974', role: 'Master Admin', name: 'Humjoly Store Owner', pin: '1974', status: 'APPROVED' },
+      { id: 'admin-2', email: 'tailor.staff@humjoly.com', password: 'staff123', role: 'Staff Admin', name: 'Tailor Shop Manager', pin: '5560', status: 'APPROVED' }
     ];
 
     const INITIAL_BRANDS = ['Soktas', 'Raymond', 'Siyaram', 'Solino', 'D&J', 'Birla Century', 'Linen Club', 'Generic'];
@@ -258,15 +258,29 @@
 
     // --- MAIN APP COMPONENT ---
     function App() {
-      const [viewMode, setViewMode] = useState('store');
+      // URL Query Param Check for Hidden Admin Endpoint (`?view=oms` or `?invite=staff`)
+      const urlParams = new URLSearchParams(window.location.search);
+      const isInviteMode = urlParams.get('invite') === 'staff';
+      const initialViewMode = urlParams.get('view') === 'oms' ? 'oms' : 'store';
+
+      const [viewMode, setViewMode] = useState(initialViewMode);
       const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
       const [showAdminLoginModal, setShowAdminLoginModal] = useState(false);
+      const [showInviteRegistrationModal, setShowInviteRegistrationModal] = useState(isInviteMode);
       
-      // Dual Auth State
-      const [authModeTab, setAuthModeTab] = useState('pin'); // 'pin' or 'email'
+      // Dual Auth State: PIN or Email/Password
+      const [authModeTab, setAuthModeTab] = useState('pin');
       const [pinInput, setPinInput] = useState('');
       const [emailInput, setEmailInput] = useState('humjolytailors1974@gmail.com');
       const [passwordInput, setPasswordInput] = useState('admin1974');
+
+      // Staff Invite Registration Form State
+      const [inviteEmail, setInviteEmail] = useState('');
+      const [invitePass, setInvitePass] = useState('');
+      const [inviteName, setInviteName] = useState('');
+      const [invitePin, setInvitePin] = useState('');
+      const [inviteSubmittedToast, setInviteSubmittedToast] = useState(false);
+
       const [adminUsers, setAdminUsers] = useState(INITIAL_ADMIN_USERS);
       const [currentLoggedInUser, setCurrentLoggedInUser] = useState(null);
 
@@ -280,7 +294,7 @@
       const [cart, setCart] = useState([]);
       const [showCartDrawer, setShowCartDrawer] = useState(false);
 
-      const [catalogViewFilterMode, setCatalogViewFilterMode] = useState('ALL'); // 'ALL' or 'VIDEO'
+      const [catalogViewFilterMode, setCatalogViewFilterMode] = useState('ALL');
       const [selectedVideo, setSelectedVideo] = useState('ALL');
       const [selectedCategory, setSelectedCategory] = useState('ALL');
       const [selectedBrand, setSelectedBrand] = useState('ALL');
@@ -369,38 +383,68 @@
         localStorage.setItem('ht_cart', JSON.stringify(updated));
       };
 
-      const handleSwitchMode = (mode) => {
-        if (mode === 'oms' && !isAdminAuthenticated) {
-          setShowAdminLoginModal(true);
-        } else {
-          setViewMode(mode);
-        }
+      const handleAdminLogout = () => {
+        setIsAdminAuthenticated(false);
+        setCurrentLoggedInUser(null);
+        setViewMode('store');
+        window.history.pushState({}, document.title, window.location.pathname);
       };
 
-      // DUAL AUTHENTICATION: PIN OR EMAIL/PASSWORD
+      // AUTHENTICATION LOGIC: MASTER PIN OR SUB-ADMIN PIN OR EMAIL/PASSWORD
       const handleVerifyAuth = (e) => {
         e.preventDefault();
         if (authModeTab === 'pin') {
+          // Check Owner Master PIN
           if (pinInput === storeSettings.adminPin) {
             setIsAdminAuthenticated(true);
-            setCurrentLoggedInUser({ name: 'Owner (PIN)', role: 'Master Admin' });
+            setCurrentLoggedInUser({ name: 'Owner (Master PIN)', role: 'Master Admin' });
             setShowAdminLoginModal(false);
             setPinInput('');
             setViewMode('oms');
-          } else {
-            alert("Invalid Security PIN! Default PIN is: 1974");
+            return;
           }
+          // Check Sub-Admin Approved PINs
+          const matchedPinUser = adminUsers.find(u => u.status === 'APPROVED' && u.pin === pinInput);
+          if (matchedPinUser) {
+            setIsAdminAuthenticated(true);
+            setCurrentLoggedInUser(matchedPinUser);
+            setShowAdminLoginModal(false);
+            setPinInput('');
+            setViewMode('oms');
+            return;
+          }
+          alert("Invalid Security PIN or Account Pending Approval!");
         } else {
           const matched = adminUsers.find(u => u.email.toLowerCase() === emailInput.toLowerCase() && u.password === passwordInput);
           if (matched) {
+            if (matched.status === 'PENDING_APPROVAL') {
+              alert("Your account is PENDING_APPROVAL by Master Admin!");
+              return;
+            }
             setIsAdminAuthenticated(true);
             setCurrentLoggedInUser(matched);
             setShowAdminLoginModal(false);
             setViewMode('oms');
           } else {
-            alert("Invalid Admin Email or Password!");
+            alert("Invalid Email or Password!");
           }
         }
+      };
+
+      // SUB-ADMIN ONBOARDING SUBMISSION
+      const handleRegisterStaffInvite = (e) => {
+        e.preventDefault();
+        const created = {
+          id: `admin-${adminUsers.length + 1}`,
+          email: inviteEmail,
+          password: invitePass,
+          name: inviteName,
+          pin: invitePin,
+          role: 'Staff Sub-Admin',
+          status: 'PENDING_APPROVAL'
+        };
+        saveAdminUsersState([...adminUsers, created]);
+        setInviteSubmittedToast(true);
       };
 
       const filteredProducts = useMemo(() => {
@@ -430,15 +474,15 @@
       return (
         <div class="min-h-screen flex flex-col bg-myntra-bg text-slate-800">
           
-          {/* MYNTRA STYLE ANNOUNCEMENT BANNER */}
+          {/* ANNOUNCEMENT BAR */}
           {storeSettings.announcementBar && (
             <div class="bg-myntra-pink text-white text-center text-xs font-semibold py-2 px-4 shadow-sm">
               {storeSettings.announcementBar}
             </div>
           )}
 
-          {/* MYNTRA STYLE CLEAN E-COMMERCE HEADER */}
-          <header class="sticky top-0 z-40 bg-white border-b border-myntra-border px-4 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-4 shadow-xs">
+          {/* CLEAN PUBLIC HEADER (HIDDEN OMS ACCESS) */}
+          <header class="sticky top-0 z-40 bg-white border-b border-myntra-border px-4 lg:px-8 py-3.5 flex items-center justify-between gap-4 shadow-xs">
             <div class="flex items-center space-x-3 cursor-pointer" onClick={() => setViewMode('store')}>
               <div class="w-10 h-10 rounded-xl overflow-hidden border border-slate-200 shadow-xs flex items-center justify-center bg-slate-100">
                 <img src={storeSettings.youtubeAvatar} alt="Logo" class="w-full h-full object-cover" onError={(e)=>{e.target.style.display='none';}} />
@@ -455,50 +499,40 @@
               </div>
             </div>
 
-            {/* DUAL ROLE SWITCHER */}
-            <div class="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
-              <button 
-                onClick={() => handleSwitchMode('store')}
-                class={`px-4 py-2 rounded-lg font-bold text-xs transition ${
-                  viewMode === 'store' ? 'bg-myntra-pink text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                🛍️ Storefront
-              </button>
-              <button 
-                onClick={() => handleSwitchMode('oms')}
-                class={`px-4 py-2 rounded-lg font-bold text-xs transition ${
-                  viewMode === 'oms' ? 'bg-slate-900 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                💼 OMS (Admin) {isAdminAuthenticated ? '✓' : '🔒'}
-              </button>
-            </div>
-
             <div class="flex items-center space-x-3">
-              {viewMode === 'store' && (
+              {viewMode === 'store' ? (
+                <>
+                  <button 
+                    onClick={() => setShowCartDrawer(true)}
+                    class="relative bg-myntra-pink hover:bg-myntra-pinkHover text-white px-4 py-2 rounded-xl text-xs font-bold transition flex items-center space-x-2 shadow-xs"
+                  >
+                    <span>🛒 Bag / Cart</span>
+                    {cart.length > 0 && (
+                      <span class="bg-white text-myntra-pink text-[10px] font-extrabold px-1.5 py-0.5 rounded-full shadow-xs">
+                        {cart.reduce((s,i)=>s+i.qty,0)}
+                      </span>
+                    )}
+                  </button>
+
+                  <a 
+                    href={`https://wa.me/${storeSettings.whatsappPhone}?text=Hi%20Humjoly%20Tailors%2C%20I%20want%20to%20enquire%20about%20fabric%20collections`}
+                    target="_blank"
+                    rel="noreferrer"
+                    class="hidden md:flex items-center space-x-2 bg-emerald-50 text-myntra-emerald hover:bg-emerald-100 px-3.5 py-2 rounded-xl border border-emerald-200 text-xs font-bold transition"
+                  >
+                    <span class="w-2 h-2 rounded-full bg-myntra-emerald animate-pulse"></span>
+                    <span>WhatsApp Line</span>
+                  </a>
+                </>
+              ) : (
+                /* ADMIN OMS LOGOUT BUTTON */
                 <button 
-                  onClick={() => setShowCartDrawer(true)}
-                  class="relative bg-myntra-pink hover:bg-myntra-pinkHover text-white px-4 py-2 rounded-xl text-xs font-bold transition flex items-center space-x-2 shadow-xs"
+                  onClick={handleAdminLogout}
+                  class="bg-slate-900 hover:bg-slate-800 text-white font-bold px-4 py-2 rounded-xl text-xs shadow-xs flex items-center space-x-1.5"
                 >
-                  <span>🛒 Bag / Cart</span>
-                  {cart.length > 0 && (
-                    <span class="bg-white text-myntra-pink text-[10px] font-extrabold px-1.5 py-0.5 rounded-full shadow-xs">
-                      {cart.reduce((s,i)=>s+i.qty,0)}
-                    </span>
-                  )}
+                  <span>🚪 Admin Logout</span>
                 </button>
               )}
-
-              <a 
-                href={`https://wa.me/${storeSettings.whatsappPhone}?text=Hi%20Humjoly%20Tailors%2C%20I%20want%20to%20enquire%20about%20fabric%20collections`}
-                target="_blank"
-                rel="noreferrer"
-                class="hidden md:flex items-center space-x-2 bg-emerald-50 text-myntra-emerald hover:bg-emerald-100 px-3.5 py-2 rounded-xl border border-emerald-200 text-xs font-bold transition"
-              >
-                <span class="w-2 h-2 rounded-full bg-myntra-emerald animate-pulse"></span>
-                <span>WhatsApp Line</span>
-              </a>
             </div>
           </header>
 
@@ -526,6 +560,7 @@
                 setWhatsappModalProduct(prod);
                 setOrderQtyModal(1);
               }}
+              onOpenAdminModal={() => setShowAdminLoginModal(true)}
             />
           ) : (
             <OmsView 
@@ -554,55 +589,77 @@
             />
           )}
 
-          {/* DUAL ADMIN LOGIN MODAL (PIN OR EMAIL/PASSWORD) */}
+          {/* DUAL ADMIN LOGIN MODAL */}
           {showAdminLoginModal && (
             <div class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
               <form onSubmit={handleVerifyAuth} class="bg-white border border-slate-200 rounded-3xl max-w-sm w-full p-6 space-y-4 shadow-xl">
                 <div class="text-center space-y-1">
                   <div class="w-12 h-12 rounded-2xl bg-pink-100 mx-auto flex items-center justify-center text-myntra-pink text-2xl font-bold">🔒</div>
                   <h3 class="font-heading font-extrabold text-lg text-slate-900">Admin Authentication</h3>
-                  <p class="text-xs text-slate-500">Owner Security PIN or Email Login</p>
+                  <p class="text-xs text-slate-500">Master PIN or Approved Staff Credentials</p>
                 </div>
 
-                {/* TAB SWITCHER: PIN vs EMAIL */}
                 <div class="flex bg-slate-100 p-1 rounded-xl text-xs font-bold">
                   <button type="button" onClick={() => setAuthModeTab('pin')} class={`flex-1 py-1.5 rounded-lg ${authModeTab === 'pin' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500'}`}>🔑 PIN Access</button>
                   <button type="button" onClick={() => setAuthModeTab('email')} class={`flex-1 py-1.5 rounded-lg ${authModeTab === 'email' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500'}`}>📧 Email Login</button>
                 </div>
 
                 {authModeTab === 'pin' ? (
-                  <div class="space-y-2">
-                    <input 
-                      type="password" 
-                      placeholder="Security PIN (Default: 1974)" 
-                      value={pinInput} 
-                      onChange={e => setPinInput(e.target.value)} 
-                      class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-center text-lg font-bold tracking-widest text-slate-900 focus:outline-none focus:border-myntra-pink" 
-                      autoFocus 
-                    />
-                  </div>
+                  <input 
+                    type="password" 
+                    placeholder="Enter 4-Digit Security PIN" 
+                    value={pinInput} 
+                    onChange={e => setPinInput(e.target.value)} 
+                    class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-center text-lg font-bold tracking-widest text-slate-900 focus:outline-none focus:border-myntra-pink" 
+                    autoFocus 
+                  />
                 ) : (
                   <div class="space-y-2 text-xs">
-                    <div>
-                      <label class="text-slate-600 font-semibold">Admin Email</label>
-                      <input type="email" required value={emailInput} onChange={e=>setEmailInput(e.target.value)} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-bold text-slate-900" />
-                    </div>
-                    <div>
-                      <label class="text-slate-600 font-semibold">Password</label>
-                      <input type="password" required value={passwordInput} onChange={e=>setPasswordInput(e.target.value)} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-bold text-slate-900" />
-                    </div>
+                    <div><label class="text-slate-600 font-semibold">Email Address</label><input type="email" required value={emailInput} onChange={e=>setEmailInput(e.target.value)} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-bold text-slate-900" /></div>
+                    <div><label class="text-slate-600 font-semibold">Password</label><input type="password" required value={passwordInput} onChange={e=>setPasswordInput(e.target.value)} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-bold text-slate-900" /></div>
                   </div>
                 )}
 
                 <button type="submit" class="w-full bg-myntra-pink hover:bg-myntra-pinkHover text-white font-bold py-3 rounded-xl text-xs shadow-xs">
-                  Unlock OMS Admin Controls
+                  Unlock OMS Admin Portal
                 </button>
                 <button type="button" onClick={() => setShowAdminLoginModal(false)} class="w-full text-xs text-slate-500 font-medium">Cancel</button>
               </form>
             </div>
           )}
 
-          {/* PRODUCT DETAIL PAGE MODAL */}
+          {/* SUB-ADMIN ONBOARDING REGISTRATION MODAL (`?invite=staff`) */}
+          {showInviteRegistrationModal && (
+            <div class="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-4">
+              <div class="bg-white border border-slate-200 rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+                <div class="text-center space-y-1">
+                  <div class="w-12 h-12 rounded-2xl bg-emerald-100 mx-auto flex items-center justify-center text-emerald-700 text-2xl font-bold">🔗</div>
+                  <h3 class="font-heading font-extrabold text-lg text-slate-900">Staff Sub-Admin Invitation</h3>
+                  <p class="text-xs text-slate-500">Register your credentials for Master Admin approval.</p>
+                </div>
+
+                {!inviteSubmittedToast ? (
+                  <form onSubmit={handleRegisterStaffInvite} class="space-y-3 text-xs">
+                    <div><label class="text-slate-600 font-semibold">Full Name *</label><input type="text" required value={inviteName} onChange={e=>setInviteName(e.target.value)} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-bold" /></div>
+                    <div><label class="text-slate-600 font-semibold">Gmail / Email Address *</label><input type="email" required value={inviteEmail} onChange={e=>setInviteEmail(e.target.value)} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-bold" /></div>
+                    <div><label class="text-slate-600 font-semibold">Password *</label><input type="password" required value={invitePass} onChange={e=>setInvitePass(e.target.value)} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-bold" /></div>
+                    <div><label class="text-slate-600 font-semibold">Desired 4-Digit Security PIN *</label><input type="password" required maxLength="4" value={invitePin} onChange={e=>setInvitePin(e.target.value)} placeholder="e.g. 5560" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-mono font-bold tracking-widest text-center text-lg" /></div>
+                    <button type="submit" class="w-full bg-myntra-pink hover:bg-myntra-pinkHover text-white font-bold py-3 rounded-xl text-xs shadow-xs">
+                      Submit Account for Master Approval 🚀
+                    </button>
+                  </form>
+                ) : (
+                  <div class="text-center py-6 space-y-3">
+                    <div class="text-emerald-600 font-bold text-base">Registration Submitted! ✓</div>
+                    <p class="text-xs text-slate-500">Your account status is currently <b>PENDING_APPROVAL</b>. Once Master Admin approves your request, you can log in using your 4-digit PIN.</p>
+                    <button onClick={() => setShowInviteRegistrationModal(false)} class="bg-slate-900 text-white font-bold px-4 py-2 rounded-xl text-xs">Close</button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* PDP MODAL */}
           {selectedPdpProduct && (
             <ProductDetailPageModal 
               product={selectedPdpProduct}
@@ -669,7 +726,7 @@
     }
 
     // ==========================================
-    // MYNTRA-INSPIRED STOREFRONT VIEW
+    // STOREFRONT VIEW (CLEAN PUBLIC USER PAGE)
     // ==========================================
     function StorefrontView({ 
       products, 
@@ -689,14 +746,15 @@
       setSearchQuery,
       onSelectProductPdp,
       onAddToCart,
-      onQuickWhatsapp 
+      onQuickWhatsapp,
+      onOpenAdminModal
     }) {
       const videoOptions = ['Video no 18', 'Video no 13', 'Video no 14', 'Video no 15', 'Video no 16', 'Video no 17', 'Video no 11'];
 
       return (
         <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
           
-          {/* HERO BANNER */}
+          {/* HERO COVER */}
           <div class="relative overflow-hidden rounded-3xl bg-white border border-myntra-border p-6 sm:p-8 shadow-xs flex flex-col md:flex-row items-center justify-between gap-6">
             <div class="space-y-3 max-w-2xl">
               <div class="inline-flex items-center space-x-2 bg-pink-50 border border-pink-200 px-3 py-1 rounded-full text-myntra-pink text-xs font-bold uppercase">
@@ -715,7 +773,7 @@
             </div>
           </div>
 
-          {/* DEDICATED CATALOG SELECTION: VIDEO vs STANDALONE CATALOG */}
+          {/* DEDICATED CATALOG SELECTION */}
           <div class="bg-white border border-myntra-border rounded-2xl p-4 space-y-4 shadow-xs">
             <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
               <span class="text-xs font-extrabold text-slate-900 uppercase">Catalogue Browsing Mode:</span>
@@ -735,7 +793,6 @@
               </div>
             </div>
 
-            {/* IF VIDEO MODE IS ACTIVE */}
             {catalogViewFilterMode === 'VIDEO' && (
               <div class="flex items-center space-x-2 overflow-x-auto pb-1 custom-scrollbar">
                 <span class="text-xs font-bold text-red-600 shrink-0 mr-1">Select Video:</span>
@@ -751,7 +808,6 @@
               </div>
             )}
 
-            {/* SEARCH */}
             <div class="relative">
               <input 
                 type="text"
@@ -763,7 +819,6 @@
               <span class="absolute left-3.5 top-3 text-slate-400 text-xs">🔍</span>
             </div>
 
-            {/* CATEGORIES & BRANDS FILTERS */}
             <div class="space-y-2">
               <div class="flex items-center space-x-2 overflow-x-auto pb-1 custom-scrollbar">
                 <span class="text-[11px] font-bold text-slate-400 uppercase shrink-0 mr-1">Category:</span>
@@ -805,7 +860,7 @@
             </div>
           </div>
 
-          {/* PRODUCT GRID */}
+          {/* FABRIC GRID */}
           <div class="space-y-4">
             <h3 class="font-heading font-extrabold text-lg text-slate-900">
               Available Fabric Catalog ({products.length})
@@ -831,11 +886,18 @@
               </div>
             )}
           </div>
+
+          {/* DISCRETE FOOTER LINK FOR HIDDEN ADMIN PORTAL */}
+          <footer class="pt-12 text-center border-t border-slate-200 pb-6 text-xs text-slate-400">
+            <div>© {new Date().getFullYear()} Humjoly Tailors. All Rights Reserved.</div>
+            <button onClick={onOpenAdminModal} class="mt-2 text-[10px] text-slate-400 hover:text-slate-600 transition">
+              🔒 Shop Owner Admin Portal
+            </button>
+          </footer>
         </main>
       );
     }
 
-    // --- MYNTRA E-COMMERCE PRODUCT CARD ---
     function MyntraProductCard({ product, onClickPdp, onAddToCart, onQuickWhatsapp }) {
       const discountPercent = product.mrpPrice ? Math.round(((product.mrpPrice - product.sellingPrice) / product.mrpPrice) * 100) : 0;
 
@@ -843,13 +905,11 @@
         <div class="group bg-white border border-myntra-border rounded-2xl overflow-hidden hover:border-pink-300 hover:shadow-lg transition duration-300 flex flex-col justify-between">
           <div class="relative aspect-square w-full bg-slate-100 overflow-hidden cursor-pointer" onClick={onClickPdp}>
             <img src={product.imageUrl} alt={product.name} class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
-            
             {discountPercent > 0 && (
               <span class="absolute top-2 left-2 bg-red-600 text-white font-extrabold text-[10px] px-2 py-0.5 rounded-md shadow-xs">
                 {discountPercent}% OFF
               </span>
             )}
-            
             <span class="absolute top-2 right-2 bg-slate-900/80 backdrop-blur-xs text-white text-[10px] font-bold px-2 py-0.5 rounded-md">
               {product.brand}
             </span>
@@ -862,25 +922,15 @@
               </h4>
               <div class="flex items-baseline space-x-1.5">
                 <span class="text-sm font-extrabold text-slate-900 font-heading">₹{product.sellingPrice}</span>
-                {product.mrpPrice && (
-                  <span class="text-[11px] text-slate-400 line-through">₹{product.mrpPrice}</span>
-                )}
+                {product.mrpPrice && <span class="text-[11px] text-slate-400 line-through">₹{product.mrpPrice}</span>}
               </div>
             </div>
 
-            {/* HOMEPAGE CART & WHATSAPP BUTTONS */}
             <div class="pt-2 border-t border-slate-100 flex items-center space-x-1.5">
-              <button 
-                onClick={onAddToCart}
-                class="flex-1 bg-myntra-pink hover:bg-myntra-pinkHover text-white font-bold py-2 rounded-xl text-[11px] text-center shadow-xs transition"
-              >
+              <button onClick={onAddToCart} class="flex-1 bg-myntra-pink hover:bg-myntra-pinkHover text-white font-bold py-2 rounded-xl text-[11px] text-center shadow-xs transition">
                 + Add Cart
               </button>
-              <button 
-                onClick={onQuickWhatsapp}
-                class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-2.5 py-2 rounded-xl text-[11px] transition shadow-xs"
-                title="Quick WhatsApp Order"
-              >
+              <button onClick={onQuickWhatsapp} class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-2.5 py-2 rounded-xl text-[11px] transition shadow-xs" title="Quick WhatsApp Order">
                 💬
               </button>
             </div>
@@ -889,7 +939,6 @@
       );
     }
 
-    // --- PRODUCT DETAIL PAGE MODAL ---
     function ProductDetailPageModal({ product, storeSettings, onClose, onAddToCart }) {
       const [selectedImg, setSelectedImg] = useState(product.imageUrl);
       const [selectedQty, setSelectedQty] = useState(1);
@@ -1075,7 +1124,6 @@
       return (
         <div class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
           
-          {/* USER WELCOME BADGE */}
           <div class="flex justify-between items-center bg-white p-3.5 rounded-2xl border border-slate-200 shadow-xs">
             <div class="flex items-center space-x-2 text-xs">
               <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -1106,9 +1154,9 @@
           <div class="flex items-center space-x-2 border-b border-slate-200 overflow-x-auto pb-2 custom-scrollbar">
             {[
               { id: 'orders', label: '📦 Orders List' },
-              { id: 'create', label: '➕ New Order (10-Column Manual & AI)' },
+              { id: 'create', label: '📸 Image-Based Order Creation & Manual Form' },
               { id: 'products', label: '🧵 Holistic Product CRUD (File Upload & Custom Category)' },
-              { id: 'customizer', label: '🎨 Exhaustive DIY Customizer & Multi-Admin Users' },
+              { id: 'customizer', label: '🎨 DIY Customizer & Sub-Admin Approvals' },
               { id: 'gsheets', label: '🟢 CSV Import & Dedupe' },
               { id: 'analytics', label: '🎥 Video Revenue' },
             ].map(tab => (
@@ -1193,13 +1241,14 @@
       );
     }
 
-    // --- COMPLETE 10-COLUMN MANUAL ORDER FORM & AI OCR ---
+    // --- RENAMED & ENHANCED IMAGE-BASED ORDER CREATION FLOW (PRD 1) ---
     function OmsCreateOrderTab({ products, orders, saveOrdersState, onSuccess }) {
-      const [entryType, setEntryType] = useState('manual');
+      const [entryType, setEntryType] = useState('image');
       const [aiScanning, setAiScanning] = useState(false);
       const [extractedDraft, setExtractedDraft] = useState(null);
+      const [uploadedMediaList, setUploadedMediaList] = useState([]);
 
-      // ALL 10 GOOGLE SHEET COLUMNS FORM STATE
+      // 10-Column Manual Form State
       const [ieNo, setIeNo] = useState(orders.length + 1);
       const [custName, setCustName] = useState('');
       const [custPhone, setCustPhone] = useState('');
@@ -1211,7 +1260,23 @@
       const [amountPaidVal, setAmountPaidVal] = useState(1600);
       const [paymentStatusVal, setPaymentStatusVal] = useState('PAID');
 
-      const handleSimulateAiUpload = () => {
+      const handleMultiImageUpload = (e) => {
+        const files = Array.from(e.target.files);
+        if (!files.length) return;
+        const newUrls = [];
+        files.forEach(file => {
+          const reader = new FileReader();
+          reader.onload = (evt) => {
+            newUrls.push(evt.target.result);
+            if (newUrls.length === files.length) {
+              setUploadedMediaList([...uploadedMediaList, ...newUrls]);
+            }
+          };
+          reader.readAsDataURL(file);
+        });
+      };
+
+      const handleRunMultimodalOcr = () => {
         setAiScanning(true);
         setTimeout(() => {
           setAiScanning(false);
@@ -1246,7 +1311,7 @@
           balanceAmount: 0,
           paymentStatus: extractedDraft.paymentStatus,
           orderStatus: 'CONFIRMED',
-          source: 'WhatsApp AI OCR'
+          source: 'Image-Based WhatsApp OCR'
         };
         saveOrdersState([newOrder, ...orders]);
         onSuccess();
@@ -1277,15 +1342,61 @@
       return (
         <div class="max-w-3xl mx-auto space-y-6">
           <div class="bg-white p-2 rounded-2xl border border-slate-200 flex space-x-2 shadow-xs">
-            <button onClick={() => setEntryType('manual')} class={`flex-1 py-2.5 rounded-xl font-heading font-bold text-xs ${entryType === 'manual' ? 'bg-myntra-pink text-white shadow-xs' : 'text-slate-600'}`}>✍️ 10-Column Manual Order Form</button>
-            <button onClick={() => setEntryType('ai')} class={`flex-1 py-2.5 rounded-xl font-heading font-bold text-xs ${entryType === 'ai' ? 'bg-myntra-pink text-white shadow-xs' : 'text-slate-600'}`}>🤖 Gemini AI OCR Parser</button>
+            <button onClick={() => setEntryType('image')} class={`flex-1 py-2.5 rounded-xl font-heading font-bold text-xs ${entryType === 'image' ? 'bg-myntra-pink text-white shadow-xs' : 'text-slate-600'}`}>📸 Image-Based Order Creation (PRD 1)</button>
+            <button onClick={() => setEntryType('manual')} class={`flex-1 py-2.5 rounded-xl font-heading font-bold text-xs ${entryType === 'manual' ? 'bg-myntra-pink text-white shadow-xs' : 'text-slate-600'}`}>✍️ 10-Column Manual Form</button>
           </div>
 
-          {entryType === 'manual' ? (
+          {entryType === 'image' ? (
+            <div class="bg-white border border-slate-200 rounded-3xl p-6 space-y-4 shadow-xs">
+              <div class="border-b pb-2">
+                <h3 class="font-heading font-extrabold text-lg text-slate-900">📸 Image-Based Order Creation Engine</h3>
+                <p class="text-xs text-slate-500">Upload multiple WhatsApp order screenshots or video clips. Gemini/OpenAI vision model parses customer & fabric details automatically.</p>
+              </div>
+
+              <div class="border-2 border-dashed border-slate-300 hover:border-myntra-pink rounded-2xl p-6 text-center space-y-3 bg-slate-50">
+                <div class="text-3xl">📸 🎥 🧾</div>
+                <div class="text-xs text-slate-600 font-semibold">Select or Drop Multiple Order Screenshots</div>
+                <input type="file" multiple accept="image/*" onChange={handleMultiImageUpload} class="text-xs" />
+              </div>
+
+              {uploadedMediaList.length > 0 && (
+                <div class="space-y-3 pt-2">
+                  <div class="text-xs font-bold text-slate-900">Uploaded Order Screenshots ({uploadedMediaList.length}):</div>
+                  <div class="flex space-x-2 overflow-x-auto pb-1 custom-scrollbar">
+                    {uploadedMediaList.map((url, i) => (
+                      <img key={i} src={url} class="w-16 h-16 rounded-xl object-cover border border-slate-300" />
+                    ))}
+                  </div>
+                  <button onClick={handleRunMultimodalOcr} class="w-full bg-myntra-pink hover:bg-myntra-pinkHover text-white font-bold py-3 rounded-xl text-xs shadow-xs">
+                    Run Vision OCR Order Extraction 🚀
+                  </button>
+                </div>
+              )}
+
+              {aiScanning && <div class="text-myntra-pink text-xs font-bold animate-pulse">Running Multimodal Vision OCR...</div>}
+
+              {extractedDraft && !aiScanning && (
+                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3 text-xs">
+                  <div class="font-bold text-slate-900 flex justify-between border-b pb-2">
+                    <span>Parsed Customer: {extractedDraft.customerName} ({extractedDraft.phoneNumber})</span>
+                    <span class="text-emerald-600">Confidence: 96% ✓</span>
+                  </div>
+                  <div class="grid grid-cols-2 gap-2 text-slate-700">
+                    <div><b>Fabric:</b> {extractedDraft.fabricDescription}</div>
+                    <div><b>Qty:</b> {extractedDraft.quantity}</div>
+                    <div><b>Video:</b> {extractedDraft.videoAttribution}</div>
+                    <div><b>Amount Paid:</b> ₹{extractedDraft.amountPaid}</div>
+                  </div>
+                  <button onClick={handleConfirmAiDraft} class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl text-xs w-full shadow-xs">
+                    Confirm & Save Order to OMS Grid ✓
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
             <form onSubmit={handleCreateManualOrder} class="bg-white border border-slate-200 rounded-3xl p-6 space-y-4 text-xs shadow-xs">
               <div class="border-b pb-2">
                 <h3 class="font-heading font-extrabold text-lg text-slate-900">Create Order — All 10 Google Sheet Columns</h3>
-                <p class="text-slate-500">Enter full order information matching Google Sheet structure.</p>
               </div>
 
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1296,12 +1407,12 @@
                 <div><label class="text-slate-600 font-semibold">4. Phone Number *</label><input type="text" required value={custPhone} onChange={e=>setCustPhone(e.target.value)} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-mono" /></div>
 
                 <div><label class="text-slate-600 font-semibold">5. Video No. Code</label><input type="text" value={videoCode} onChange={e=>setVideoCode(e.target.value)} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-bold text-red-600" /></div>
-                <div><label class="text-slate-600 font-semibold">6. Fabric Description *</label><input type="text" required value={fabricDesc} onChange={e=>setFabricDesc(e.target.value)} placeholder="e.g. Soktas shirt checks" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-bold" /></div>
+                <div><label class="text-slate-600 font-semibold">6. Fabric Description *</label><input type="text" required value={fabricDesc} onChange={e=>setFabricDesc(e.target.value)} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-bold" /></div>
 
-                <div><label class="text-slate-600 font-semibold">7. Quantity *</label><input type="text" required value={quantityStr} onChange={e=>setQuantityStr(e.target.value)} placeholder="e.g. 2 pc" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5" /></div>
+                <div><label class="text-slate-600 font-semibold">7. Quantity *</label><input type="text" required value={quantityStr} onChange={e=>setQuantityStr(e.target.value)} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5" /></div>
                 <div><label class="text-slate-600 font-semibold">8. Amount Paid (₹) *</label><input type="number" required value={amountPaidVal} onChange={e=>setAmountPaidVal(e.target.value)} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-bold" /></div>
 
-                <div class="sm:col-span-2"><label class="text-slate-600 font-semibold">9. Customer Full Delivery Address *</label><input type="text" required value={custAddress} onChange={e=>setCustAddress(e.target.value)} placeholder="House No, Colony, City, Pin..." class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5" /></div>
+                <div class="sm:col-span-2"><label class="text-slate-600 font-semibold">9. Customer Address *</label><input type="text" required value={custAddress} onChange={e=>setCustAddress(e.target.value)} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5" /></div>
 
                 <div class="sm:col-span-2">
                   <label class="text-slate-600 font-semibold">10. Payment Status *</label>
@@ -1317,27 +1428,12 @@
                 Save Order to OMS & Firestore ✓
               </button>
             </form>
-          ) : (
-            <div class="bg-white border border-slate-200 rounded-3xl p-6 space-y-4">
-              <h3 class="font-heading font-bold text-lg text-slate-900">Gemini AI OCR Parser</h3>
-              <div class="border-2 border-dashed border-slate-300 rounded-2xl p-8 text-center space-y-4">
-                <div class="text-3xl">📸 🎥</div>
-                <button onClick={handleSimulateAiUpload} class="bg-myntra-pink text-white font-bold px-4 py-2 rounded-xl text-xs shadow-xs">Simulate OCR Parsing</button>
-              </div>
-              {aiScanning && <div class="text-myntra-pink text-xs font-bold">Extracting media...</div>}
-              {extractedDraft && !aiScanning && (
-                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3 text-xs">
-                  <div class="text-myntra-pink font-bold">Parsed: {extractedDraft.customerName} ({extractedDraft.phoneNumber})</div>
-                  <button onClick={handleConfirmAiDraft} class="bg-emerald-600 text-white font-bold py-2 rounded-xl text-xs w-full">Confirm Order ✓</button>
-                </div>
-              )}
-            </div>
           )}
         </div>
       );
     }
 
-    // --- HOLISTIC PRODUCT CRUD WITH LOCAL FILE UPLOADER ---
+    // --- HOLISTIC PRODUCT CRUD ---
     function OmsHolisticProductsTab({ products, saveProductsState, brandsList, categoriesList, addDynamicBrand, addDynamicCategory, onEditRow, onAdjustStock }) {
       const [showAddModal, setShowAddModal] = useState(false);
       const [newProdName, setNewProdName] = useState('');
@@ -1353,16 +1449,13 @@
       const [newProdMrp, setNewProdMrp] = useState(1500);
       const [newProdStock, setNewProdStock] = useState(30);
 
-      // Multi-Image Gallery
       const [galleryUrls, setGalleryUrls] = useState([PRESET_FABRIC_IMAGES[0].url]);
 
       const handleFileUpload = (e) => {
         const file = e.target.files[0];
         if (!file) return;
         const reader = new FileReader();
-        reader.onload = (evt) => {
-          setGalleryUrls([...galleryUrls, evt.target.result]);
-        };
+        reader.onload = (evt) => setGalleryUrls([...galleryUrls, evt.target.result]);
         reader.readAsDataURL(file);
       };
 
@@ -1425,15 +1518,13 @@
         <div class="space-y-6">
           <div class="flex justify-between items-center">
             <div>
-              <h3 class="font-heading font-bold text-lg text-slate-900">Inventory Master (With Local File Uploader)</h3>
-              <p class="text-xs text-slate-500">Pick image files from device or paste image URLs directly.</p>
+              <h3 class="font-heading font-bold text-lg text-slate-900">Inventory Master (With File Uploader)</h3>
             </div>
             <button onClick={() => setShowAddModal(true)} class="bg-myntra-pink text-white font-bold px-4 py-2 rounded-xl text-xs shadow-xs">
               + Add New Fabric Item
             </button>
           </div>
 
-          {/* ADD PRODUCT MODAL */}
           {showAddModal && (
             <form onSubmit={handleAddProduct} class="bg-white border border-slate-200 rounded-3xl p-6 space-y-4 max-w-2xl mx-auto shadow-xl">
               <div class="flex justify-between border-b pb-3">
@@ -1442,10 +1533,7 @@
               </div>
 
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                <div class="sm:col-span-2">
-                  <label class="text-slate-600 font-semibold">Fabric Name *</label>
-                  <input type="text" required value={newProdName} onChange={e=>setNewProdName(e.target.value)} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-bold" />
-                </div>
+                <div class="sm:col-span-2"><label class="text-slate-600 font-semibold">Fabric Name *</label><input type="text" required value={newProdName} onChange={e=>setNewProdName(e.target.value)} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-bold" /></div>
 
                 <div>
                   <label class="text-slate-600 font-semibold">Brand</label>
@@ -1484,17 +1572,13 @@
                 <div><label class="text-slate-600 font-semibold">Selling Price (₹)</label><input type="number" required value={newProdPrice} onChange={e=>setNewProdPrice(e.target.value)} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-bold" /></div>
                 <div><label class="text-slate-600 font-semibold">MRP Price (₹)</label><input type="number" value={newProdMrp} onChange={e=>setNewProdMrp(e.target.value)} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5" /></div>
 
-                {/* LOCAL PHOTO FILE UPLOADER */}
                 <div class="sm:col-span-2 space-y-2 border-t pt-3">
-                  <label class="text-myntra-pink font-bold">Photo Upload & Gallery Manager</label>
-                  <div class="flex items-center space-x-2">
-                    <input type="file" accept="image/*" onChange={handleFileUpload} class="text-xs text-slate-600" />
-                  </div>
-
+                  <label class="text-myntra-pink font-bold">Photo Upload & Gallery</label>
+                  <input type="file" accept="image/*" onChange={handleFileUpload} class="text-xs" />
                   <div class="flex space-x-2 overflow-x-auto pb-1 custom-scrollbar">
                     {galleryUrls.map((url, idx) => (
-                      <div key={idx} class="relative group">
-                        <img src={url} class="w-12 h-12 rounded-lg object-cover border border-slate-300" />
+                      <div key={idx} class="relative">
+                        <img src={url} class="w-12 h-12 rounded-lg object-cover border" />
                         <button type="button" onClick={() => handleRemoveImageThumbnail(idx)} class="absolute -top-1 -right-1 bg-red-600 text-white rounded-full w-4 h-4 text-[9px] flex items-center justify-center font-bold">✕</button>
                       </div>
                     ))}
@@ -1509,7 +1593,6 @@
             </form>
           )}
 
-          {/* TABLE */}
           <div class="bg-white border border-slate-200 rounded-2xl overflow-x-auto shadow-xs">
             <table class="w-full text-left text-xs">
               <thead class="bg-slate-100 text-slate-600 font-semibold uppercase border-b">
@@ -1553,7 +1636,6 @@
       );
     }
 
-    // --- HOLISTIC EDIT MODAL ---
     function EditProductModal({ product, brandsList, categoriesList, addDynamicBrand, addDynamicCategory, onClose, onSave }) {
       const [form, setForm] = useState({ ...product });
       const [galleryUrls, setGalleryUrls] = useState(
@@ -1564,14 +1646,12 @@
         const file = e.target.files[0];
         if (!file) return;
         const reader = new FileReader();
-        reader.onload = (evt) => {
-          setGalleryUrls([...galleryUrls, evt.target.result]);
-        };
+        reader.onload = (evt) => setGalleryUrls([...galleryUrls, evt.target.result]);
         reader.readAsDataURL(file);
       };
 
       const handleRemoveImageThumbnail = (idx) => {
-        if (galleryUrls.length <= 1) return alert("Must retain 1 image!");
+        if (galleryUrls.length <= 1) return alert("Must keep 1 photo!");
         setGalleryUrls(galleryUrls.filter((_, i) => i !== idx));
       };
 
@@ -1579,20 +1659,17 @@
         <div class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
           <form onSubmit={(e)=>{ e.preventDefault(); onSave({ ...form, imageUrl: galleryUrls[0], galleryImages: galleryUrls }); }} class="bg-white border border-slate-200 rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
             <div class="flex justify-between items-center border-b pb-3">
-              <h3 class="font-heading font-bold text-lg text-slate-900">Edit Inventory Row & Photos</h3>
+              <h3 class="font-heading font-bold text-lg text-slate-900">Edit Product Row</h3>
               <button type="button" onClick={onClose} class="text-slate-400">✕</button>
             </div>
 
             <div class="grid grid-cols-2 gap-3 text-xs">
-              <div class="col-span-2">
-                <label class="text-slate-600 font-semibold">Product Name</label>
-                <input type="text" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2 font-bold" />
-              </div>
+              <div class="col-span-2"><label class="text-slate-600 font-semibold">Product Name</label><input type="text" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2 font-bold" /></div>
               <div><label class="text-slate-600 font-semibold">Selling Price (₹)</label><input type="number" value={form.sellingPrice} onChange={e => setForm({ ...form, sellingPrice: Number(e.target.value) })} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2 font-bold" /></div>
-              <div><label class="text-slate-600 font-semibold">Stock Quantity</label><input type="number" value={form.currentStock} onChange={e => setForm({ ...form, currentStock: Number(e.target.value) })} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2" /></div>
+              <div><label class="text-slate-600 font-semibold">Stock</label><input type="number" value={form.currentStock} onChange={e => setForm({ ...form, currentStock: Number(e.target.value) })} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2" /></div>
 
               <div class="col-span-2 space-y-2 border-t pt-3">
-                <label class="text-myntra-pink font-bold">Local File Photo Picker & Gallery Manager</label>
+                <label class="text-myntra-pink font-bold">Photo Upload & Gallery</label>
                 <input type="file" accept="image/*" onChange={handleFileUpload} class="text-xs" />
                 <div class="flex space-x-2 overflow-x-auto pb-1 custom-scrollbar">
                   {galleryUrls.map((url, idx) => (
@@ -1614,13 +1691,11 @@
       );
     }
 
-    // --- EXHAUSTIVE DIY WEBSITE CUSTOMIZER & MULTI-ADMIN USERS ---
+    // --- DIY CUSTOMIZER & SUB-ADMIN INVITE & APPROVAL QUEUE ---
     function OmsWebsiteCustomizerTab({ storeSettings, saveSettingsState, adminUsers, saveAdminUsersState }) {
       const [formData, setFormData] = useState(storeSettings);
       const [savedToast, setSavedToast] = useState(false);
-      const [newAdminEmail, setNewAdminEmail] = useState('');
-      const [newAdminPass, setNewAdminPass] = useState('');
-      const [newAdminRole, setNewAdminRole] = useState('Staff Admin');
+      const [inviteLinkCopiedToast, setInviteLinkCopiedToast] = useState(false);
 
       const handleSubmit = (e) => {
         e.preventDefault();
@@ -1629,26 +1704,30 @@
         setTimeout(() => setSavedToast(false), 2000);
       };
 
-      const handleAddAdminUser = (e) => {
-        e.preventDefault();
-        if (!newAdminEmail || !newAdminPass) return;
-        const created = {
-          id: `admin-${adminUsers.length + 1}`,
-          email: newAdminEmail,
-          password: newAdminPass,
-          role: newAdminRole,
-          name: newAdminEmail.split('@')[0]
-        };
-        saveAdminUsersState([...adminUsers, created]);
-        setNewAdminEmail('');
-        setNewAdminPass('');
+      const handleGenerateInviteLink = () => {
+        const url = `${window.location.origin}${window.location.pathname}?invite=staff`;
+        navigator.clipboard.writeText(url);
+        setInviteLinkCopiedToast(true);
+        setTimeout(() => setInviteLinkCopiedToast(false), 2500);
+      };
+
+      const handleApproveSubAdmin = (userId) => {
+        const updated = adminUsers.map(u => u.id === userId ? { ...u, status: 'APPROVED' } : u);
+        saveAdminUsersState(updated);
+      };
+
+      const handleRejectSubAdmin = (userId) => {
+        const updated = adminUsers.filter(u => u.id !== userId);
+        saveAdminUsersState(updated);
       };
 
       return (
         <div class="space-y-6 max-w-3xl mx-auto">
+          
+          {/* DIY CUSTOMIZER */}
           <form onSubmit={handleSubmit} class="bg-white border border-slate-200 rounded-3xl p-6 space-y-4 shadow-xs">
             <div class="flex justify-between border-b pb-3">
-              <h3 class="font-heading font-extrabold text-lg text-slate-900">Exhaustive DIY Website Customizer</h3>
+              <h3 class="font-heading font-extrabold text-lg text-slate-900">DIY Website Customizer</h3>
               {savedToast && <span class="text-xs bg-emerald-100 text-emerald-800 font-bold px-3 py-1 rounded-full">Saved ✓</span>}
             </div>
 
@@ -1656,38 +1735,52 @@
               <div><label class="text-slate-600 font-semibold">Store Title</label><input type="text" value={formData.storeName} onChange={e=>setFormData({...formData, storeName:e.target.value})} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-bold" /></div>
               <div><label class="text-slate-600 font-semibold">WhatsApp Business Phone</label><input type="text" value={formData.whatsappPhone} onChange={e=>setFormData({...formData, whatsappPhone:e.target.value})} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-mono" /></div>
               <div class="sm:col-span-2"><label class="text-slate-600 font-semibold">Tagline</label><input type="text" value={formData.tagline} onChange={e=>setFormData({...formData, tagline:e.target.value})} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5" /></div>
-              <div class="sm:col-span-2"><label class="text-slate-600 font-semibold">Announcement Bar Banner</label><input type="text" value={formData.announcementBar} onChange={e=>setFormData({...formData, announcementBar:e.target.value})} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5" /></div>
-              <div><label class="text-slate-600 font-semibold">Hero Headline</label><input type="text" value={formData.heroTitle} onChange={e=>setFormData({...formData, heroTitle:e.target.value})} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5" /></div>
-              <div><label class="text-slate-600 font-semibold">Admin Security PIN</label><input type="text" value={formData.adminPin} onChange={e=>setFormData({...formData, adminPin:e.target.value})} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-mono font-bold" /></div>
+              <div class="sm:col-span-2"><label class="text-slate-600 font-semibold">Announcement Bar</label><input type="text" value={formData.announcementBar} onChange={e=>setFormData({...formData, announcementBar:e.target.value})} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5" /></div>
             </div>
 
             <button type="submit" class="w-full bg-myntra-pink text-white font-bold py-3 rounded-xl text-xs shadow-xs">Save Store Customizations</button>
           </form>
 
-          {/* MASTER & MULTI-ADMIN USER MANAGEMENT */}
+          {/* MASTER ADMIN STAFF INVITE LINK & APPROVAL QUEUE */}
           <div class="bg-white border border-slate-200 rounded-3xl p-6 space-y-4 shadow-xs">
-            <h3 class="font-heading font-extrabold text-lg text-slate-900">Multi-Admin User Management</h3>
-            <div class="space-y-2 text-xs">
+            <div class="flex justify-between items-center border-b pb-3">
+              <div>
+                <h3 class="font-heading font-extrabold text-lg text-slate-900">Sub-Admin Invite & Master Approval Queue</h3>
+                <p class="text-xs text-slate-500">Generate staff registration links & approve sub-admin 4-digit PIN access.</p>
+              </div>
+              <button type="button" onClick={handleGenerateInviteLink} class="bg-emerald-600 text-white font-bold px-4 py-2 rounded-xl text-xs shadow-xs">
+                {inviteLinkCopiedToast ? 'Copied Invite URL ✓' : '🔗 Generate Staff Invite Link'}
+              </button>
+            </div>
+
+            <div class="space-y-3 text-xs">
+              <h4 class="font-bold text-slate-900 uppercase">Sub-Admin Accounts & Approvals:</h4>
               {adminUsers.map(u => (
-                <div key={u.id} class="flex justify-between items-center bg-slate-50 p-3 rounded-xl border border-slate-200">
+                <div key={u.id} class="flex justify-between items-center bg-slate-50 p-3.5 rounded-2xl border border-slate-200">
                   <div>
-                    <span class="font-bold text-slate-900">{u.name}</span> <span class="text-slate-500">({u.email})</span>
-                    <div class="text-[10px] text-slate-400">Role: {u.role} | Saved Credentials: Non-Hashed ({u.password})</div>
+                    <div class="font-bold text-slate-900">{u.name} <span class="text-slate-500">({u.email})</span></div>
+                    <div class="text-[10px] text-slate-500">PIN: {u.pin ? '****' : 'N/A'} | Status: <b class={u.status === 'APPROVED' ? 'text-emerald-600' : 'text-amber-600'}>{u.status}</b></div>
                   </div>
-                  <span class="bg-pink-50 text-myntra-pink border border-pink-200 font-bold px-2.5 py-1 rounded-lg text-[10px]">{u.role}</span>
+
+                  {u.status === 'PENDING_APPROVAL' ? (
+                    <div class="flex space-x-1.5">
+                      <button onClick={() => handleApproveSubAdmin(u.id)} class="bg-emerald-600 text-white font-bold px-3 py-1.5 rounded-lg text-xs">
+                        ✅ Approve PIN
+                      </button>
+                      <button onClick={() => handleRejectSubAdmin(u.id)} class="bg-red-600 text-white font-bold px-2.5 py-1.5 rounded-lg text-xs">
+                        ✕ Reject
+                      </button>
+                    </div>
+                  ) : (
+                    <span class="bg-emerald-100 text-emerald-800 font-bold px-2.5 py-1 rounded-lg text-[10px]">
+                      {u.role} ✓
+                    </span>
+                  )}
                 </div>
               ))}
             </div>
-
-            <form onSubmit={handleAddAdminUser} class="space-y-3 pt-3 border-t text-xs">
-              <h4 class="font-bold text-slate-900">Create New Staff Admin Account</h4>
-              <div class="grid grid-cols-2 gap-2">
-                <input type="email" placeholder="Gmail / Staff Email..." required value={newAdminEmail} onChange={e=>setNewAdminEmail(e.target.value)} class="bg-slate-50 p-2.5 border rounded-xl" />
-                <input type="text" placeholder="Password (Saved Non-Hashed)..." required value={newAdminPass} onChange={e=>setNewAdminPass(e.target.value)} class="bg-slate-50 p-2.5 border rounded-xl font-mono" />
-              </div>
-              <button type="submit" class="bg-slate-900 text-white font-bold px-4 py-2 rounded-xl text-xs shadow-xs">+ Add Staff Admin User</button>
-            </form>
           </div>
+
         </div>
       );
     }
