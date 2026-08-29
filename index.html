@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Humjoly Tailors — Bespoke Storefront & OMS</title>
+  <title>Humjoly Tailors — Premium Storefront & Internal OMS</title>
   
   <!-- Google Fonts: Inter & Outfit -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -22,11 +22,11 @@
           },
           colors: {
             brand: {
-              50: '#fbf8f3',
-              100: '#f6eedf',
+              50: '#FAF6F0',
+              100: '#F4ECE0',
               500: '#AA7C4B',
               600: '#8C6036',
-              gold: '#D4AF37'
+              accent: '#D4AF37'
             }
           }
         }
@@ -46,26 +46,34 @@
   <style>
     body {
       font-family: 'Inter', sans-serif;
-      background-color: #f8fafc;
-      color: #0f172a;
+      background-color: #0f0f11;
+      color: #e4e4e7;
     }
     h1, h2, h3, h4, h5, h6, .font-heading {
       font-family: 'Outfit', sans-serif;
+    }
+    .gold-gradient {
+      background: linear-gradient(135deg, #F3E5AB 0%, #D4AF37 50%, #AA7C4B 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .gold-bg-gradient {
+      background: linear-gradient(135deg, #D4AF37 0%, #AA7C4B 100%);
     }
     .custom-scrollbar::-webkit-scrollbar {
       width: 6px;
       height: 6px;
     }
     .custom-scrollbar::-webkit-scrollbar-track {
-      background: #f1f5f9;
+      background: #18181b;
     }
     .custom-scrollbar::-webkit-scrollbar-thumb {
-      background: #cbd5e1;
+      background: #3f3f46;
       border-radius: 4px;
     }
   </style>
 </head>
-<body class="custom-scrollbar selection:bg-amber-500 selection:text-white min-h-screen">
+<body class="custom-scrollbar selection:bg-amber-500 selection:text-black min-h-screen">
   <div id="root"></div>
 
   <script type="text/babel">
@@ -81,23 +89,23 @@
       appId: "1:190537577726:web:949c3d3dfa6be7237421af"
     };
 
+    let firebaseDb = null;
     try {
       if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+      firebaseDb = firebase.firestore();
     } catch(e) {}
 
-    // --- PRESET FABRIC IMAGES FOR EASY CRUD SELECTION ---
+    // --- PRESET FABRIC PHOTOS FOR CRUD IMAGE PICKER ---
     const PRESET_FABRIC_IMAGES = [
       { name: 'Giza Navy Checks', url: 'https://images.unsplash.com/photo-1598033129183-c4f50c736f10?w=600&auto=format&fit=crop&q=80' },
       { name: 'Maroon Giza Checks', url: 'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=600&auto=format&fit=crop&q=80' },
       { name: 'Pure Pastel Linen', url: 'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=600&auto=format&fit=crop&q=80' },
       { name: 'Raymond Fine Wool Trouser', url: 'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=600&auto=format&fit=crop&q=80' },
-      { name: 'Midnight Navy Trouser', url: 'https://images.unsplash.com/photo-1617137968427-85924c800a22?w=600&auto=format&fit=crop&q=80' },
-      { name: 'D&J Gift Combo Set', url: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=600&auto=format&fit=crop&q=80' },
-      { name: 'Italian Luster Cotton', url: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=600&auto=format&fit=crop&q=80' },
-      { name: 'Corduroy Pant Set', url: 'https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?w=600&auto=format&fit=crop&q=80' }
+      { name: 'Midnight Navy Suiting', url: 'https://images.unsplash.com/photo-1617137968427-85924c800a22?w=600&auto=format&fit=crop&q=80' },
+      { name: 'D&J Unstitched Gift Combo', url: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=600&auto=format&fit=crop&q=80' }
     ];
 
-    // --- INITIAL FABRIC PRODUCTS & DATA ---
+    // --- INITIAL FABRIC PRODUCTS ---
     const INITIAL_PRODUCTS = [
       {
         id: 'prod-1',
@@ -120,7 +128,7 @@
           'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=600&auto=format&fit=crop&q=80'
         ],
         isActive: true,
-        description: 'Ultra-soft luxury Egyptian cotton shirt fabric in classic checks. Featured as Item #1 in Video #13.'
+        description: 'Ultra-soft luxury Egyptian Giza cotton shirt fabric in classic checks. Featured as Item #1 in Video #13.'
       },
       {
         id: 'prod-1b',
@@ -234,25 +242,39 @@
         paymentStatus: 'PAID',
         orderStatus: 'DISPATCHED',
         source: 'YouTube Storefront'
+      },
+      {
+        id: 'HT-1003',
+        ie: 3,
+        date: '29/07/2026',
+        customer: { name: 'Prasad Tangirala', phone: '9849662763', address: 'H.No- 1-8-706/28, Padma Colony, Nalgonda' },
+        videoAttribution: 'Video no 13',
+        fabricDescription: 'Soktas shirt checks',
+        quantity: '3 pc',
+        totalAmount: 2400,
+        amountPaid: 2400,
+        balanceAmount: 0,
+        paymentStatus: 'PAID',
+        orderStatus: 'READY_TO_DISPATCH',
+        source: 'YouTube Storefront'
       }
     ];
 
     const DEFAULT_STORE_SETTINGS = {
       storeName: 'HUMJOLY TAILORS',
-      tagline: 'SUITING AND SHIRTING FABRICS RAYMOND SIYARAM SOKTAS',
-      announcementBar: '✨ Free shipping across India on orders above ₹1500 | Explore YouTube Collections',
+      tagline: 'Bespoke Fabrics & Suiting Since 1974',
+      announcementBar: '✨ Free Shipping across India on orders above ₹1500! Direct YouTube Collection Hub',
       whatsappPhone: '919440975560',
-      heroTitle: 'HUMJOLY TAILORS FABRIC STORE',
-      heroSubtitle: 'Bespoke Suiting & Shirting Fabrics Since 1974. Explore fabrics featured on our YouTube channel (@HumjolyTailors1974) or order direct on WhatsApp.',
+      heroTitle: 'Humjoly Tailors Premium Fabric Collection',
+      heroSubtitle: 'Explore suiting & shirting fabrics featured on our YouTube channel (@HumjolyTailors1974) or browse our complete standalone catalog below.',
       adminPin: '1974',
       youtubeAvatar: 'https://yt3.googleusercontent.com/ytc/AIdro_k4qY6p9uX7F4d6T_N4e3_m8v8X=s176-c-k-c0x00ffffff-no-rj'
     };
 
-    // Initial Dynamic Master Lists for Brands & Categories
     const INITIAL_BRANDS = ['Soktas', 'Raymond', 'Siyaram', 'Solino', 'D&J', 'Birla Century', 'Linen Club', 'Generic'];
-    const INITIAL_CATEGORIES = ['Shirting', 'Pure Cotton', 'Pure Linen', 'Trouser', 'Pant Shirt Combo', 'Cotton Linen'];
+    const INITIAL_CATEGORIES = ['Shirting', 'Pure Cotton', 'Pure Linen', 'Trouser', 'Pant Shirt Combo', 'Cotton Linen', 'Suit Piece'];
 
-    // --- MAIN APP COMPONENT ---
+    // --- MAIN APPLICATION COMPONENT ---
     function App() {
       const [viewMode, setViewMode] = useState('store');
       const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
@@ -366,7 +388,7 @@
           setPinInput('');
           setViewMode('oms');
         } else {
-          alert("Invalid Security PIN!");
+          alert("Invalid Security PIN! Try default: 1974");
         }
       };
 
@@ -395,50 +417,49 @@
       const lowStockCount = useMemo(() => products.filter(p => p.currentStock <= p.lowStockThreshold).length, [products]);
 
       return (
-        <div class="min-h-screen flex flex-col bg-slate-50 text-slate-900">
+        <div class="min-h-screen flex flex-col bg-[#0f0f11] text-zinc-100">
           
-          {/* STORE ANNOUNCEMENT BANNER */}
+          {/* ANNOUNCEMENT BAR */}
           {storeSettings.announcementBar && (
-            <div class="bg-amber-500 text-black text-center text-xs font-semibold py-2 px-4 shadow-sm">
+            <div class="bg-gradient-to-r from-amber-600 via-amber-500 to-amber-700 text-black text-center text-xs font-bold py-1.5 px-4 tracking-wide shadow-inner">
               {storeSettings.announcementBar}
             </div>
           )}
 
-          {/* STORE.LINK STYLE MINIMALIST HEADER */}
-          <header class="sticky top-0 z-40 bg-white border-b border-slate-200 px-4 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4 shadow-xs">
+          {/* LUXURY TOP HEADER BAR */}
+          <header class="sticky top-0 z-40 bg-zinc-900/90 backdrop-blur-md border-b border-zinc-800 px-4 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-4">
             <div class="flex items-center space-x-3 cursor-pointer" onClick={() => setViewMode('store')}>
-              <div class="w-10 h-10 rounded-full overflow-hidden border border-slate-200 shadow-xs flex items-center justify-center bg-slate-100">
-                <img src={storeSettings.youtubeAvatar} alt="Logo" class="w-full h-full object-cover" onError={(e) => { e.target.style.display='none'; }} />
-                <span class="font-heading font-extrabold text-slate-800 text-sm">HT</span>
+              <div class="w-10 h-10 rounded-xl gold-bg-gradient flex items-center justify-center font-heading font-extrabold text-black text-xl shadow-lg shadow-amber-500/20 overflow-hidden">
+                <img src={storeSettings.youtubeAvatar} alt="Logo" class="w-full h-full object-cover" onError={(e)=>{e.target.style.display='none';}} />
+                <span class="font-heading font-extrabold text-black">HT</span>
               </div>
               <div>
-                <div class="flex items-center space-x-1.5">
-                  <h1 class="font-heading font-bold text-lg text-slate-900 leading-tight">
-                    {storeSettings.storeName}
-                  </h1>
-                  <span class="text-xs text-blue-600">✓</span>
-                </div>
-                <p class="text-[11px] text-slate-500 font-medium tracking-wide uppercase">{storeSettings.tagline}</p>
+                <h1 class="font-heading font-bold text-lg leading-tight tracking-wide text-white">
+                  {storeSettings.storeName}
+                </h1>
+                <p class="text-xs text-amber-400/90 font-medium">{storeSettings.tagline}</p>
               </div>
             </div>
 
             {/* DUAL ROLE SWITCHER */}
-            <div class="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
+            <div class="flex items-center bg-zinc-800/80 p-1.5 rounded-xl border border-zinc-700/60 shadow-inner">
               <button 
                 onClick={() => handleSwitchMode('store')}
-                class={`px-3.5 py-1.5 rounded-lg font-semibold text-xs transition ${
-                  viewMode === 'store' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'
+                class={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium text-xs sm:text-sm transition-all duration-200 ${
+                  viewMode === 'store' ? 'bg-amber-500 text-black shadow-md font-semibold' : 'text-zinc-400 hover:text-zinc-200'
                 }`}
               >
-                🛍️ Storefront
+                <span>🛍️</span>
+                <span>Customer Storefront</span>
               </button>
               <button 
                 onClick={() => handleSwitchMode('oms')}
-                class={`px-3.5 py-1.5 rounded-lg font-semibold text-xs transition ${
-                  viewMode === 'oms' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'
+                class={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium text-xs sm:text-sm transition-all duration-200 ${
+                  viewMode === 'oms' ? 'bg-amber-500 text-black shadow-md font-semibold' : 'text-zinc-400 hover:text-zinc-200'
                 }`}
               >
-                💼 OMS (Admin) {isAdminAuthenticated ? '✓' : '🔒'}
+                <span>💼</span>
+                <span>Internal OMS {isAdminAuthenticated ? '✓' : '🔒'}</span>
               </button>
             </div>
 
@@ -446,20 +467,30 @@
               {viewMode === 'store' && (
                 <button 
                   onClick={() => setShowCartDrawer(true)}
-                  class="relative bg-slate-900 hover:bg-slate-800 text-white px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center space-x-2 shadow-xs"
+                  class="relative bg-zinc-800 hover:bg-zinc-700 text-white px-4 py-2 rounded-xl text-xs font-bold border border-zinc-700 transition flex items-center space-x-2 shadow"
                 >
                   <span>🛒 Cart</span>
                   {cart.length > 0 && (
-                    <span class="bg-amber-500 text-black text-[10px] font-extrabold px-1.5 py-0.5 rounded-full">
+                    <span class="bg-amber-500 text-black text-[10px] font-extrabold w-5 h-5 rounded-full flex items-center justify-center">
                       {cart.reduce((s,i)=>s+i.qty,0)}
                     </span>
                   )}
                 </button>
               )}
+
+              <a 
+                href={`https://wa.me/${storeSettings.whatsappPhone}?text=Hi%20Humjoly%20Tailors%2C%20I%20want%20to%20enquire%20about%20fabric%20collections`}
+                target="_blank"
+                rel="noreferrer"
+                class="hidden md:flex items-center space-x-2 bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600/30 px-3.5 py-1.5 rounded-lg border border-emerald-500/30 text-xs font-semibold transition"
+              >
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span>WhatsApp Line</span>
+              </a>
             </div>
           </header>
 
-          {/* MAIN BODY MODE */}
+          {/* MAIN VIEW */}
           {viewMode === 'store' ? (
             <StorefrontView 
               products={filteredProducts}
@@ -506,32 +537,32 @@
             />
           )}
 
-          {/* ADMIN SECURITY PIN MODAL */}
+          {/* ADMIN PIN SECURITY MODAL */}
           {showAdminPinModal && (
-            <div class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-              <form onSubmit={handleVerifyPin} class="bg-white border border-slate-200 rounded-3xl max-w-sm w-full p-6 space-y-4 shadow-xl">
-                <div class="text-center space-y-1">
-                  <div class="w-12 h-12 rounded-2xl bg-amber-100 mx-auto flex items-center justify-center text-amber-700 text-2xl font-bold">🔒</div>
-                  <h3 class="font-heading font-bold text-lg text-slate-900">Owner Access Verification</h3>
-                  <p class="text-xs text-slate-500">Enter Admin Security PIN (Default: 1974)</p>
+            <div class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+              <form onSubmit={handleVerifyPin} class="bg-zinc-900 border border-zinc-700 rounded-3xl max-w-sm w-full p-6 space-y-5 shadow-2xl">
+                <div class="text-center space-y-2">
+                  <div class="w-12 h-12 rounded-2xl gold-bg-gradient mx-auto flex items-center justify-center text-black text-2xl font-bold">🔒</div>
+                  <h3 class="font-heading font-bold text-xl text-white">Owner Security Authentication</h3>
+                  <p class="text-xs text-zinc-400">Enter Security PIN to access Internal OMS & Catalog Controls</p>
                 </div>
                 <input 
-                  type="password" 
-                  placeholder="Security PIN" 
-                  value={pinInput} 
-                  onChange={e => setPinInput(e.target.value)} 
-                  class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-center text-lg font-bold tracking-widest text-slate-900 focus:outline-none focus:border-amber-500" 
-                  autoFocus 
+                  type="password"
+                  placeholder="Security PIN (Default: 1974)"
+                  value={pinInput}
+                  onChange={(e) => setPinInput(e.target.value)}
+                  class="w-full bg-zinc-950 border border-zinc-700 rounded-xl p-3 text-center text-lg tracking-widest text-amber-400 font-bold focus:outline-none focus:border-amber-500"
+                  autoFocus
                 />
-                <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 rounded-xl text-xs shadow-sm">
-                  Unlock Admin Controls
+                <button type="submit" class="w-full bg-amber-500 hover:bg-amber-400 text-black font-bold py-3 rounded-xl text-xs transition shadow">
+                  Unlock Admin Access
                 </button>
-                <button type="button" onClick={() => setShowAdminPinModal(false)} class="w-full text-xs text-slate-500 font-medium">Cancel</button>
+                <button type="button" onClick={() => setShowAdminPinModal(false)} class="w-full bg-zinc-800 text-zinc-400 py-2 rounded-xl text-xs font-medium">Cancel</button>
               </form>
             </div>
           )}
 
-          {/* PRODUCT DETAIL PAGE (PDP MODAL - STORE.LINK STYLE) */}
+          {/* PRODUCT DETAIL PAGE (PDP MODAL) */}
           {selectedPdpProduct && (
             <ProductDetailPageModal 
               product={selectedPdpProduct}
@@ -541,7 +572,7 @@
             />
           )}
 
-          {/* SHOPPING CART DRAWER */}
+          {/* CART DRAWER */}
           {showCartDrawer && (
             <CartDrawer 
               cart={cart}
@@ -563,7 +594,20 @@
             />
           )}
 
-          {/* HOLISTIC EDIT PRODUCT ROW MODAL (WITH IMAGE UPLOADER & DYNAMIC BRANDS) */}
+          {/* ORDER DETAIL DRAWER */}
+          {selectedOrderForDrawer && (
+            <OrderDetailModal 
+              order={selectedOrderForDrawer}
+              onClose={() => setSelectedOrderForDrawer(null)}
+              onUpdateStatus={(orderId, newStatus) => {
+                const updated = orders.map(o => o.id === orderId ? { ...o, orderStatus: newStatus } : o);
+                saveOrdersState(updated);
+                setSelectedOrderForDrawer(prev => ({ ...prev, orderStatus: newStatus }));
+              }}
+            />
+          )}
+
+          {/* EDIT PRODUCT ROW MODAL (MULTI-IMAGE THUMBNAIL MANAGER) */}
           {editingProductRow && (
             <EditProductModal 
               product={editingProductRow}
@@ -598,7 +642,7 @@
     }
 
     // ==========================================
-    // MINIMALIST STOREFRONT VIEW (STORE.LINK STYLE)
+    // STOREFRONT VIEW
     // ==========================================
     function StorefrontView({ 
       products, 
@@ -620,63 +664,106 @@
     }) {
       const videoOptions = ['ALL', 'Video no 18', 'Video no 13', 'Video no 14', 'Video no 15', 'Video no 16', 'Video no 17', 'Video no 11', 'Video no 8'];
 
+      const videoTimelineItems = useMemo(() => {
+        if (selectedVideo === 'ALL') return [];
+        return allProducts.filter(p => p.isActive && p.featuredInVideos.includes(selectedVideo));
+      }, [allProducts, selectedVideo]);
+
       return (
-        <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+        <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
           
-          {/* HERO COVER BANNER */}
-          <div class="relative overflow-hidden rounded-3xl bg-white border border-slate-200 p-6 sm:p-10 shadow-xs flex flex-col md:flex-row items-center justify-between gap-6">
-            <div class="space-y-3 max-w-2xl">
-              <div class="inline-flex items-center space-x-2 bg-amber-50 border border-amber-200 px-3 py-1 rounded-full text-amber-800 text-xs font-semibold">
-                <span>🎥 YouTube Collection Hub (@HumjolyTailors1974)</span>
+          {/* HERO BANNER */}
+          <div class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-zinc-900 via-amber-950/40 to-zinc-900 border border-amber-500/20 p-6 sm:p-10 shadow-2xl">
+            <div class="relative z-10 max-w-3xl space-y-4">
+              <div class="inline-flex items-center space-x-2 bg-amber-500/10 border border-amber-500/30 px-3 py-1 rounded-full text-amber-400 text-xs font-semibold uppercase">
+                <span>🎥 YouTube Collection Hub + Standalone Catalog</span>
               </div>
-              <h2 class="text-2xl sm:text-4xl font-heading font-extrabold text-slate-900 leading-tight">
+              <h2 class="text-3xl sm:text-5xl font-heading font-extrabold text-white leading-tight">
                 {storeSettings.heroTitle}
               </h2>
-              <p class="text-slate-600 text-xs sm:text-sm leading-relaxed">
+              <p class="text-zinc-300 text-sm sm:text-base leading-relaxed">
                 {storeSettings.heroSubtitle}
               </p>
-              
-              <div class="pt-2 flex flex-wrap gap-2">
+              <div class="pt-2 flex flex-wrap gap-3">
                 <button 
                   onClick={() => setSelectedVideo('Video no 18')}
-                  class="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2.5 rounded-xl font-bold text-xs transition shadow-xs"
+                  class="bg-amber-500 hover:bg-amber-400 text-black px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition shadow-lg shadow-amber-500/20"
                 >
-                  ▶ Video #18 Collection
+                  <span>📺 Video #18 Collection</span>
                 </button>
                 <button 
                   onClick={() => { setSelectedVideo('ALL'); setSelectedCategory('ALL'); setSelectedBrand('ALL'); setSearchQuery(''); }}
-                  class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2.5 rounded-xl font-medium text-xs border border-slate-300 transition"
+                  class="bg-zinc-800 hover:bg-zinc-700 text-zinc-200 px-4 py-2.5 rounded-xl font-medium text-xs sm:text-sm border border-zinc-700 transition"
                 >
-                  View All Collection ({allProducts.filter(p=>p.isActive).length})
+                  Browse Full Catalog ({allProducts.filter(p=>p.isActive).length} Fabrics)
                 </button>
               </div>
             </div>
-
-            <div class="w-32 h-32 rounded-3xl overflow-hidden border-2 border-slate-200 shadow-md shrink-0 bg-slate-100">
-              <img src={storeSettings.youtubeAvatar} alt="Avatar" class="w-full h-full object-cover" />
-            </div>
           </div>
 
-          {/* SEARCH & MINIMALIST CATEGORY BAR */}
-          <div class="bg-white border border-slate-200 rounded-2xl p-4 space-y-4 shadow-xs">
+          {/* MULTI-ITEM VIDEO SHOWCASE TIMELINE */}
+          {selectedVideo !== 'ALL' && (
+            <div class="bg-zinc-900 border border-amber-500/40 rounded-3xl p-6 space-y-5">
+              <div class="flex flex-wrap items-center justify-between gap-4 border-b border-zinc-800 pb-4">
+                <div class="flex items-center space-x-3">
+                  <div class="w-12 h-12 rounded-2xl bg-red-600/20 text-red-500 border border-red-500/30 flex items-center justify-center text-2xl font-bold">
+                    ▶️
+                  </div>
+                  <div>
+                    <h3 class="font-heading font-bold text-white text-lg">
+                      Multi-Item Video Showcase — "{selectedVideo}"
+                    </h3>
+                    <p class="text-xs text-zinc-400">
+                      Showing fabric pieces featured in this video with sequence badges (#1, #2, #3...).
+                    </p>
+                  </div>
+                </div>
+
+                <button onClick={() => setSelectedVideo('ALL')} class="text-xs text-amber-400 hover:text-amber-300 font-semibold underline">
+                  ✕ Exit Video View & Show All Stock
+                </button>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {videoTimelineItems.map(item => (
+                  <div key={item.id} class="bg-zinc-950 border border-zinc-800 rounded-2xl p-4 flex space-x-3 items-center justify-between">
+                    <img src={item.imageUrl} class="w-16 h-16 rounded-xl object-cover" />
+                    <div class="flex-1 min-w-0">
+                      <span class="bg-red-950 text-red-400 border border-red-800 text-[10px] font-bold px-2 py-0.5 rounded">
+                        {item.sequenceInVideo || 'Featured Item'}
+                      </span>
+                      <h4 class="font-heading font-bold text-xs text-white truncate mt-1">{item.name}</h4>
+                      <div class="text-sm font-extrabold text-amber-400 font-heading">₹{item.sellingPrice} / {item.unit}</div>
+                    </div>
+                    <button onClick={() => onAddToCart(item)} class="bg-amber-500 hover:bg-amber-400 text-black font-bold p-2 rounded-xl text-xs shrink-0">
+                      + Cart
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* SEARCH & FILTER BAR */}
+          <div class="bg-zinc-900/80 border border-zinc-800 rounded-2xl p-4 space-y-4">
             <div class="relative">
               <input 
                 type="text"
-                placeholder="Search suiting & shirting fabrics (e.g. Soktas, Raymond, Linen)..."
+                placeholder="Search fabric name, brand, SKU..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 pl-10 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-slate-900"
+                class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 pl-11 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500"
               />
-              <span class="absolute left-3.5 top-3 text-slate-400 text-xs">🔍</span>
+              <span class="absolute left-4 top-3.5 text-zinc-500">🔍</span>
             </div>
 
-            <div class="space-y-2.5">
-              {/* Categories */}
+            <div class="flex flex-col space-y-3">
+              {/* Dynamic Categories */}
               <div class="flex items-center space-x-2 overflow-x-auto pb-1 custom-scrollbar">
-                <span class="text-[11px] font-bold text-slate-400 uppercase shrink-0 mr-1">Category:</span>
+                <span class="text-xs font-semibold text-zinc-400 uppercase shrink-0 mr-2">Category:</span>
                 <button 
-                  onClick={() => setSelectedCategory('ALL')} 
-                  class={`px-3 py-1.5 rounded-full text-xs font-semibold shrink-0 transition ${selectedCategory === 'ALL' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+                  onClick={() => setSelectedCategory('ALL')}
+                  class={`px-3 py-1.5 rounded-lg text-xs font-medium shrink-0 transition ${selectedCategory === 'ALL' ? 'bg-amber-500 text-black font-semibold' : 'bg-zinc-800/80 text-zinc-400'}`}
                 >
                   All
                 </button>
@@ -684,19 +771,19 @@
                   <button
                     key={cat}
                     onClick={() => setSelectedCategory(cat)}
-                    class={`px-3 py-1.5 rounded-full text-xs font-semibold shrink-0 transition ${selectedCategory === cat ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+                    class={`px-3 py-1.5 rounded-lg text-xs font-medium shrink-0 transition ${selectedCategory === cat ? 'bg-amber-500 text-black font-semibold' : 'bg-zinc-800/80 text-zinc-400'}`}
                   >
                     {cat}
                   </button>
                 ))}
               </div>
 
-              {/* Brands */}
+              {/* Dynamic Brands */}
               <div class="flex items-center space-x-2 overflow-x-auto pb-1 custom-scrollbar">
-                <span class="text-[11px] font-bold text-slate-400 uppercase shrink-0 mr-1">Brand:</span>
+                <span class="text-xs font-semibold text-zinc-400 uppercase shrink-0 mr-2">Brand:</span>
                 <button 
-                  onClick={() => setSelectedBrand('ALL')} 
-                  class={`px-3 py-1 rounded-full text-xs font-medium shrink-0 transition ${selectedBrand === 'ALL' ? 'bg-amber-500 text-black font-bold' : 'bg-slate-100 text-slate-600'}`}
+                  onClick={() => setSelectedBrand('ALL')}
+                  class={`px-3 py-1.5 rounded-lg text-xs font-medium shrink-0 transition ${selectedBrand === 'ALL' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 font-semibold' : 'bg-zinc-800/50 text-zinc-400'}`}
                 >
                   All Brands
                 </button>
@@ -704,7 +791,7 @@
                   <button
                     key={brand}
                     onClick={() => setSelectedBrand(brand)}
-                    class={`px-3 py-1 rounded-full text-xs font-medium shrink-0 transition ${selectedBrand === brand ? 'bg-amber-500 text-black font-bold' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+                    class={`px-3 py-1.5 rounded-lg text-xs font-medium shrink-0 transition ${selectedBrand === brand ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 font-semibold' : 'bg-zinc-800/50 text-zinc-400'}`}
                   >
                     {brand}
                   </button>
@@ -713,22 +800,24 @@
             </div>
           </div>
 
-          {/* STORE.LINK PRODUCT CARDS GRID */}
+          {/* STOREFRONT PRODUCT CARDS */}
           <div class="space-y-4">
-            <h3 class="font-heading font-bold text-lg text-slate-900">
-              Available Fabric Catalog ({products.length})
+            <h3 class="font-heading font-bold text-xl text-white">
+              Available Stock Catalog <span class="text-sm font-normal text-zinc-400">({products.length} items)</span>
             </h3>
 
             {products.length === 0 ? (
-              <div class="bg-white border border-slate-200 rounded-2xl p-12 text-center space-y-3 shadow-xs">
-                <div class="text-3xl">🔍</div>
-                <p class="text-xs text-slate-500">No fabrics match your search query.</p>
-                <button onClick={() => { setSelectedVideo('ALL'); setSelectedCategory('ALL'); setSelectedBrand('ALL'); setSearchQuery(''); }} class="text-xs bg-slate-100 px-4 py-2 rounded-xl font-bold text-slate-700">Reset Filters</button>
+              <div class="bg-zinc-900/40 border border-zinc-800 rounded-2xl p-12 text-center space-y-3">
+                <div class="text-4xl">🔍</div>
+                <h4 class="font-heading font-semibold text-lg text-zinc-300">No Fabrics Matched</h4>
+                <button onClick={() => { setSelectedVideo('ALL'); setSelectedCategory('ALL'); setSelectedBrand('ALL'); setSearchQuery(''); }} class="bg-amber-500/20 text-amber-400 border border-amber-500/30 px-4 py-2 rounded-xl text-xs font-semibold">
+                  Reset All Filters
+                </button>
               </div>
             ) : (
-              <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {products.map(product => (
-                  <StoreLinkProductCard 
+                  <ProductCard 
                     key={product.id} 
                     product={product} 
                     onClickPdp={() => onSelectProductPdp(product)}
@@ -743,153 +832,110 @@
       );
     }
 
-    // --- STORE.LINK PRODUCT CARD COMPONENT ---
-    function StoreLinkProductCard({ product, onClickPdp, onAddToCart, onQuickWhatsapp }) {
+    function ProductCard({ product, onClickPdp, onAddToCart, onQuickWhatsapp }) {
       const discountPercent = product.mrpPrice ? Math.round(((product.mrpPrice - product.sellingPrice) / product.mrpPrice) * 100) : 0;
 
       return (
-        <div class="group bg-white border border-slate-200 rounded-2xl overflow-hidden hover:border-slate-400 hover:shadow-md transition flex flex-col justify-between">
-          <div class="relative aspect-square w-full bg-slate-100 overflow-hidden cursor-pointer" onClick={onClickPdp}>
-            <img src={product.imageUrl} alt={product.name} class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
-            
-            {discountPercent > 0 && (
-              <span class="absolute top-2 left-2 bg-red-600 text-white font-bold text-[10px] px-2 py-0.5 rounded-md shadow-xs">
-                {discountPercent}% OFF
-              </span>
-            )}
-            
-            <span class="absolute top-2 right-2 bg-slate-900/80 backdrop-blur-xs text-white text-[10px] font-bold px-2 py-0.5 rounded-md">
-              {product.brand}
-            </span>
+        <div class="group bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden hover:border-amber-500/40 transition duration-300 flex flex-col justify-between">
+          <div class="relative h-56 w-full overflow-hidden bg-zinc-950 cursor-pointer" onClick={onClickPdp}>
+            <img src={product.imageUrl} alt={product.name} class="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+            <div class="absolute top-3 left-3 flex flex-wrap gap-1.5">
+              <span class="bg-black/80 text-amber-400 border border-amber-500/30 text-[10px] font-semibold px-2.5 py-1 rounded-md">{product.brand}</span>
+              {discountPercent > 0 && (
+                <span class="bg-red-950 text-red-400 border border-red-800 text-[10px] font-bold px-2 py-1 rounded-md">
+                  {discountPercent}% OFF
+                </span>
+              )}
+            </div>
           </div>
 
-          <div class="p-3.5 space-y-3 flex-1 flex flex-col justify-between">
-            <div class="space-y-1 cursor-pointer" onClick={onClickPdp}>
-              <h4 class="font-heading font-bold text-xs text-slate-900 group-hover:text-amber-700 transition line-clamp-2 leading-snug">
-                {product.name}
-              </h4>
-              <div class="flex items-baseline space-x-1.5">
-                <span class="text-sm font-extrabold text-slate-900 font-heading">₹{product.sellingPrice}</span>
-                {product.mrpPrice && (
-                  <span class="text-[11px] text-slate-400 line-through">₹{product.mrpPrice}</span>
-                )}
+          <div class="p-5 flex-1 flex flex-col justify-between space-y-4">
+            <div class="space-y-2 cursor-pointer" onClick={onClickPdp}>
+              <div class="flex items-center justify-between text-xs text-zinc-400">
+                <span>SKU: {product.sku}</span>
+                <span class="text-amber-400/90 font-medium">{product.fabricType}</span>
               </div>
+              <h4 class="font-heading font-bold text-lg text-white group-hover:text-amber-400 transition">{product.name}</h4>
             </div>
 
-            <div class="pt-2 border-t border-slate-100 flex items-center justify-between gap-1.5">
-              <button 
-                onClick={onClickPdp}
-                class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold py-2 rounded-xl text-[11px] text-center transition"
-              >
-                See Details
-              </button>
-              <button 
-                onClick={onQuickWhatsapp}
-                class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-2.5 py-2 rounded-xl text-[11px] transition shadow-xs"
-                title="Quick WhatsApp Order"
-              >
-                💬
-              </button>
+            <div class="pt-3 border-t border-zinc-800 flex items-center justify-between gap-2">
+              <div>
+                <div class="flex items-baseline space-x-1.5">
+                  <span class="text-xl font-extrabold text-amber-400 font-heading">₹{product.sellingPrice}</span>
+                  {product.mrpPrice && <span class="text-xs text-zinc-500 line-through">₹{product.mrpPrice}</span>}
+                </div>
+              </div>
+              <div class="flex items-center space-x-2">
+                <button onClick={onAddToCart} class="bg-amber-500 hover:bg-amber-400 text-black font-bold px-3 py-2 rounded-xl text-xs shadow">+ Cart</button>
+                <button onClick={onQuickWhatsapp} class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold p-2 rounded-xl text-xs">💬</button>
+              </div>
             </div>
           </div>
         </div>
       );
     }
 
-    // --- PRODUCT DETAIL PAGE MODAL (PDP - STORE.LINK STYLE) ---
+    // --- PRODUCT DETAIL PAGE MODAL ---
     function ProductDetailPageModal({ product, storeSettings, onClose, onAddToCart }) {
       const [selectedImg, setSelectedImg] = useState(product.imageUrl);
-      const [selectedQty, setSelectedQty] = useState(1);
-      const discountPercent = product.mrpPrice ? Math.round(((product.mrpPrice - product.sellingPrice) / product.mrpPrice) * 100) : 0;
-
+      const [qty, setQty] = useState(1);
       const gallery = product.galleryImages && product.galleryImages.length > 0 ? product.galleryImages : [product.imageUrl];
-      const totalPrice = product.sellingPrice * selectedQty;
+      const discountPercent = product.mrpPrice ? Math.round(((product.mrpPrice - product.sellingPrice) / product.mrpPrice) * 100) : 0;
+      const totalPrice = product.sellingPrice * qty;
 
-      const whatsappText = `Hi Humjoly Tailors, I want to order:\n\n🧵 *Product*: ${product.name}\n🔖 *SKU*: ${product.sku}\n📏 *Quantity*: ${selectedQty} ${product.unit}\n💵 *Total Price*: ₹${totalPrice}\n🎥 *Reference*: ${product.featuredInVideos?.[0] || 'Store Catalog'}\n\nPlease confirm availability and payment details.`;
+      const whatsappText = `Hi Humjoly Tailors, I want to order:\n\n🧵 *Product*: ${product.name}\n🔖 *SKU*: ${product.sku}\n📏 *Quantity*: ${qty} ${product.unit}\n💵 *Total Price*: ₹${totalPrice}\n\nPlease confirm availability.`;
       const whatsappUrl = `https://wa.me/${storeSettings.whatsappPhone}?text=${encodeURIComponent(whatsappText)}`;
 
       return (
-        <div class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-          <div class="bg-white border border-slate-200 rounded-3xl max-w-2xl w-full p-6 space-y-6 shadow-2xl relative my-8">
-            <button onClick={onClose} class="absolute top-4 right-4 text-slate-400 hover:text-slate-900 text-xl font-bold">✕</button>
+        <div class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+          <div class="bg-zinc-900 border border-zinc-700 rounded-3xl max-w-2xl w-full p-6 space-y-6 shadow-2xl relative my-8">
+            <button onClick={onClose} class="absolute top-4 right-4 text-zinc-400 hover:text-white text-xl font-bold">✕</button>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Image Gallery Viewer */}
               <div class="space-y-3">
-                <div class="aspect-square w-full rounded-2xl overflow-hidden bg-slate-100 border border-slate-200">
+                <div class="aspect-square w-full rounded-2xl overflow-hidden bg-zinc-950 border border-zinc-800">
                   <img src={selectedImg} class="w-full h-full object-cover" />
                 </div>
                 {gallery.length > 1 && (
                   <div class="flex space-x-2">
                     {gallery.map((img, idx) => (
-                      <img 
-                        key={idx} 
-                        src={img} 
-                        onClick={() => setSelectedImg(img)}
-                        class={`w-14 h-14 rounded-xl object-cover cursor-pointer border-2 transition ${selectedImg === img ? 'border-amber-500 scale-105' : 'border-slate-200'}`} 
-                      />
+                      <img key={idx} src={img} onClick={() => setSelectedImg(img)} class={`w-14 h-14 rounded-xl object-cover cursor-pointer border-2 ${selectedImg === img ? 'border-amber-500' : 'border-zinc-800'}`} />
                     ))}
                   </div>
                 )}
               </div>
 
-              {/* Specs & Ordering */}
               <div class="space-y-4 flex flex-col justify-between">
                 <div class="space-y-2">
-                  <div class="flex items-center space-x-2 text-xs text-slate-500">
-                    <span class="font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">{product.brand}</span>
-                    <span>•</span>
-                    <span>SKU: {product.sku}</span>
-                  </div>
-
-                  <h3 class="font-heading font-extrabold text-xl text-slate-900 leading-snug">
-                    {product.name}
-                  </h3>
-
+                  <span class="bg-amber-500/10 text-amber-400 border border-amber-500/30 text-xs font-bold px-2.5 py-0.5 rounded">{product.brand}</span>
+                  <h3 class="font-heading font-extrabold text-xl text-white">{product.name}</h3>
                   <div class="flex items-baseline space-x-2 pt-1">
-                    <span class="text-2xl font-extrabold text-slate-900 font-heading">₹{product.sellingPrice}</span>
-                    {product.mrpPrice && (
-                      <span class="text-sm text-slate-400 line-through">₹{product.mrpPrice}</span>
-                    )}
-                    {discountPercent > 0 && (
-                      <span class="bg-red-100 text-red-700 text-xs font-bold px-2 py-0.5 rounded">
-                        {discountPercent}% OFF
-                      </span>
-                    )}
+                    <span class="text-2xl font-extrabold text-amber-400 font-heading">₹{product.sellingPrice}</span>
+                    {product.mrpPrice && <span class="text-sm text-zinc-500 line-through">₹{product.mrpPrice}</span>}
+                    {discountPercent > 0 && <span class="bg-red-950 text-red-400 text-xs font-bold px-2 py-0.5 rounded border border-red-800">{discountPercent}% OFF</span>}
                   </div>
                 </div>
 
-                <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-2 text-xs">
-                  <div class="flex justify-between text-slate-600"><span>Fabric Composition:</span><span class="font-semibold text-slate-900">{product.fabricType}</span></div>
-                  <div class="flex justify-between text-slate-600"><span>Unit / Sizing:</span><span class="font-semibold text-slate-900">{product.unit}</span></div>
-                  <div class="flex justify-between text-slate-600"><span>Stock Availability:</span><span class="font-semibold text-emerald-600">{product.currentStock > 0 ? `In Stock (${product.currentStock} ${product.unit}s)` : 'Out of Stock'}</span></div>
+                <div class="bg-zinc-950 p-3 rounded-xl border border-zinc-800 space-y-2 text-xs">
+                  <div class="flex justify-between text-zinc-400"><span>Fabric Composition:</span><span class="font-semibold text-white">{product.fabricType}</span></div>
+                  <div class="flex justify-between text-zinc-400"><span>Stock Level:</span><span class="font-semibold text-emerald-400">{product.currentStock} {product.unit} available</span></div>
                 </div>
 
-                {/* Quantity selector */}
                 <div class="flex items-center justify-between pt-1">
-                  <span class="text-xs text-slate-600 font-semibold">Select Quantity:</span>
-                  <div class="flex items-center space-x-3 bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200">
-                    <button onClick={() => setSelectedQty(Math.max(1, selectedQty - 1))} class="text-slate-900 font-bold text-sm px-1">-</button>
-                    <span class="font-bold text-slate-900 text-xs w-4 text-center">{selectedQty}</span>
-                    <button onClick={() => setSelectedQty(selectedQty + 1)} class="text-slate-900 font-bold text-sm px-1">+</button>
+                  <span class="text-xs text-zinc-400">Select Quantity:</span>
+                  <div class="flex items-center space-x-3 bg-zinc-950 px-3 py-1.5 rounded-xl border border-zinc-800">
+                    <button onClick={() => setQty(Math.max(1, qty - 1))} class="text-amber-400 font-bold px-1 text-sm">-</button>
+                    <span class="font-bold text-white text-xs w-4 text-center">{qty}</span>
+                    <button onClick={() => setQty(qty + 1)} class="text-amber-400 font-bold px-1 text-sm">+</button>
                   </div>
                 </div>
 
-                {/* Dual CTAs */}
                 <div class="space-y-2 pt-2">
-                  <a 
-                    href={whatsappUrl} 
-                    target="_blank" 
-                    rel="noreferrer"
-                    class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-center block text-xs shadow-sm transition"
-                  >
+                  <a href={whatsappUrl} target="_blank" rel="noreferrer" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-center block text-xs shadow">
                     💬 Order on WhatsApp (₹{totalPrice})
                   </a>
-                  <button 
-                    onClick={() => { onAddToCart(product, selectedQty); onClose(); }}
-                    class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 rounded-xl text-xs transition"
-                  >
-                    🛒 Add {selectedQty} {product.unit} to Cart
+                  <button onClick={() => { onAddToCart(product, qty); onClose(); }} class="w-full bg-amber-500 hover:bg-amber-400 text-black font-bold py-3 rounded-xl text-xs">
+                    🛒 Add {qty} {product.unit} to Cart
                   </button>
                 </div>
               </div>
@@ -899,7 +945,6 @@
       );
     }
 
-    // --- CART DRAWER ---
     function CartDrawer({ cart, storeSettings, updateCartQty, onClose, onClearCart }) {
       const totalAmount = cart.reduce((sum, item) => sum + (item.product.sellingPrice * item.qty), 0);
 
@@ -913,29 +958,29 @@
       };
 
       return (
-        <div class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex justify-end">
-          <div class="bg-white border-l border-slate-200 max-w-md w-full h-full p-6 flex flex-col justify-between shadow-2xl">
+        <div class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex justify-end">
+          <div class="bg-zinc-900 border-l border-zinc-800 max-w-md w-full h-full p-6 flex flex-col justify-between shadow-2xl">
             <div class="space-y-4">
-              <div class="flex items-center justify-between border-b border-slate-200 pb-4">
-                <h3 class="font-heading font-bold text-lg text-slate-900">Your Fabric Cart ({cart.reduce((s,i)=>s+i.qty,0)})</h3>
-                <button onClick={onClose} class="text-slate-400 hover:text-slate-900 text-lg">✕</button>
+              <div class="flex items-center justify-between border-b border-zinc-800 pb-4">
+                <h3 class="font-heading font-bold text-xl text-white">Your Cart ({cart.reduce((s,i)=>s+i.qty,0)})</h3>
+                <button onClick={onClose} class="text-zinc-400 hover:text-white text-xl">✕</button>
               </div>
 
               {cart.length === 0 ? (
-                <div class="text-center py-12 text-slate-400 text-xs">Your cart is empty.</div>
+                <div class="text-center py-12 text-zinc-400 text-xs">Your fabric cart is empty.</div>
               ) : (
                 <div class="space-y-3 max-h-[60vh] overflow-y-auto custom-scrollbar pr-1">
                   {cart.map((item) => (
-                    <div key={item.product.id} class="bg-slate-50 p-3 rounded-2xl border border-slate-200 flex space-x-3 items-center justify-between">
+                    <div key={item.product.id} class="bg-zinc-950 p-3 rounded-2xl border border-zinc-800 flex space-x-3 items-center justify-between">
                       <img src={item.product.imageUrl} class="w-14 h-14 rounded-xl object-cover" />
                       <div class="flex-1 min-w-0">
-                        <h4 class="font-heading font-bold text-xs text-slate-900 truncate">{item.product.name}</h4>
-                        <div class="text-xs text-amber-700 font-semibold mt-0.5">₹{item.product.sellingPrice} / {item.product.unit}</div>
+                        <h4 class="font-heading font-bold text-xs text-white truncate">{item.product.name}</h4>
+                        <div class="text-xs text-amber-400 font-semibold mt-0.5">₹{item.product.sellingPrice} / {item.product.unit}</div>
                       </div>
-                      <div class="flex items-center space-x-2 bg-white px-2 py-1 rounded-lg border border-slate-200">
-                        <button onClick={() => updateCartQty(item.product.id, item.qty - 1)} class="text-slate-900 font-bold px-1 text-xs">-</button>
-                        <span class="text-xs font-bold text-slate-900 w-4 text-center">{item.qty}</span>
-                        <button onClick={() => updateCartQty(item.product.id, item.qty + 1)} class="text-slate-900 font-bold px-1 text-xs">+</button>
+                      <div class="flex items-center space-x-2 bg-zinc-900 px-2 py-1 rounded-lg border border-zinc-800">
+                        <button onClick={() => updateCartQty(item.product.id, item.qty - 1)} class="text-amber-400 font-bold px-1 text-xs">-</button>
+                        <span class="text-xs font-bold text-white w-4 text-center">{item.qty}</span>
+                        <button onClick={() => updateCartQty(item.product.id, item.qty + 1)} class="text-amber-400 font-bold px-1 text-xs">+</button>
                       </div>
                     </div>
                   ))}
@@ -944,12 +989,12 @@
             </div>
 
             {cart.length > 0 && (
-              <div class="space-y-3 border-t border-slate-200 pt-4">
+              <div class="space-y-3 border-t border-zinc-800 pt-4">
                 <div class="flex justify-between items-baseline">
-                  <span class="text-xs text-slate-500 font-medium">Total Order Value:</span>
-                  <span class="text-xl font-extrabold text-slate-900 font-heading">₹{totalAmount}</span>
+                  <span class="text-xs text-zinc-400">Total Order Value:</span>
+                  <span class="text-2xl font-extrabold text-amber-400 font-heading">₹{totalAmount}</span>
                 </div>
-                <a href={generateCombinedWhatsapp()} target="_blank" rel="noreferrer" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 rounded-xl text-center block text-xs shadow-sm">
+                <a href={generateCombinedWhatsapp()} target="_blank" rel="noreferrer" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 rounded-xl text-center block text-sm shadow">
                   Send Combined Order on WhatsApp 🚀
                 </a>
               </div>
@@ -965,20 +1010,20 @@
       const whatsappUrl = `https://wa.me/${storeSettings.whatsappPhone}?text=${encodeURIComponent(whatsappText)}`;
 
       return (
-        <div class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div class="bg-white border border-slate-200 rounded-3xl max-w-md w-full p-6 space-y-5 shadow-2xl">
-            <div class="flex justify-between border-b border-slate-200 pb-3">
-              <h3 class="font-heading font-bold text-lg text-slate-900">Quick WhatsApp Order</h3>
-              <button onClick={onClose} class="text-slate-400">✕</button>
+        <div class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div class="bg-zinc-900 border border-zinc-700 rounded-3xl max-w-md w-full p-6 space-y-5 shadow-2xl">
+            <div class="flex justify-between border-b border-zinc-800 pb-3">
+              <h3 class="font-heading font-bold text-lg text-white">Quick WhatsApp Order</h3>
+              <button onClick={onClose} class="text-zinc-400">✕</button>
             </div>
-            <div class="flex space-x-3 bg-slate-50 p-3 rounded-2xl border border-slate-200">
+            <div class="flex space-x-3 bg-zinc-950 p-3 rounded-2xl border border-zinc-800">
               <img src={product.imageUrl} class="w-14 h-14 rounded-xl object-cover" />
               <div>
-                <h4 class="font-heading font-bold text-xs text-slate-900">{product.name}</h4>
-                <p class="text-xs text-amber-700 font-semibold mt-1">₹{product.sellingPrice} / {product.unit}</p>
+                <h4 class="font-heading font-bold text-xs text-white">{product.name}</h4>
+                <p class="text-xs text-amber-400 font-semibold mt-1">₹{product.sellingPrice} / {product.unit}</p>
               </div>
             </div>
-            <a href={whatsappUrl} target="_blank" rel="noreferrer" class="w-full bg-emerald-600 text-white font-bold py-3 rounded-xl text-center block text-xs shadow-sm">
+            <a href={whatsappUrl} target="_blank" rel="noreferrer" class="w-full bg-emerald-600 text-white font-bold py-3.5 rounded-xl text-center block text-sm shadow">
               Send Message on WhatsApp 🚀
             </a>
           </div>
@@ -987,7 +1032,7 @@
     }
 
     // ==========================================
-    // INTERNAL OMS & ADMIN VIEW
+    // INTERNAL OMS & ADMIN VIEW (FULL PRD FEATURE SUITE)
     // ==========================================
     function OmsView({ 
       activeTab, 
@@ -1012,36 +1057,42 @@
     }) {
       return (
         <div class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-          <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <div class="bg-white border border-slate-200 p-4 rounded-2xl space-y-1 shadow-xs">
-              <div class="text-xs text-slate-500 font-medium">Total Revenue</div>
-              <div class="text-2xl font-extrabold text-slate-900 font-heading">₹{totalRevenue.toLocaleString()}</div>
+          <div class="grid grid-cols-2 lg:grid-cols-5 gap-4">
+            <div class="bg-zinc-900 border border-zinc-800 p-4 rounded-2xl space-y-1">
+              <div class="text-xs text-zinc-400 font-medium">Total Orders</div>
+              <div class="text-2xl font-extrabold text-white font-heading">{orders.length}</div>
             </div>
-            <div class="bg-white border border-slate-200 p-4 rounded-2xl space-y-1 shadow-xs">
-              <div class="text-xs text-slate-500 font-medium">Total Orders</div>
-              <div class="text-2xl font-extrabold text-slate-900 font-heading">{orders.length}</div>
+            <div class="bg-zinc-900 border border-zinc-800 p-4 rounded-2xl space-y-1">
+              <div class="text-xs text-zinc-400 font-medium">Total Revenue</div>
+              <div class="text-2xl font-extrabold text-amber-400 font-heading">₹{totalRevenue.toLocaleString()}</div>
             </div>
-            <div class="bg-white border border-slate-200 p-4 rounded-2xl space-y-1 shadow-xs">
-              <div class="text-xs text-slate-500 font-medium">Pending Payments</div>
-              <div class="text-2xl font-extrabold text-red-600 font-heading">₹{pendingPayment.toLocaleString()}</div>
+            <div class="bg-zinc-900 border border-zinc-800 p-4 rounded-2xl space-y-1">
+              <div class="text-xs text-zinc-400 font-medium">Pending Payments</div>
+              <div class="text-2xl font-extrabold text-red-400 font-heading">₹{pendingPayment.toLocaleString()}</div>
             </div>
-            <div class="bg-white border border-slate-200 p-4 rounded-2xl space-y-1 shadow-xs">
-              <div class="text-xs text-slate-500 font-medium">Low Stock Warning</div>
-              <div class="text-2xl font-extrabold text-amber-600 font-heading">{lowStockCount} items</div>
+            <div class="bg-zinc-900 border border-zinc-800 p-4 rounded-2xl space-y-1">
+              <div class="text-xs text-zinc-400 font-medium">Ready to Dispatch</div>
+              <div class="text-2xl font-extrabold text-emerald-400 font-heading">{readyToDispatchCount}</div>
+            </div>
+            <div class="bg-zinc-900 border border-zinc-800 p-4 rounded-2xl space-y-1 col-span-2 lg:col-span-1">
+              <div class="text-xs text-zinc-400 font-medium">Low Stock Warning</div>
+              <div class="text-2xl font-extrabold text-amber-500 font-heading">{lowStockCount} items</div>
             </div>
           </div>
 
-          <div class="flex items-center space-x-2 border-b border-slate-200 overflow-x-auto pb-2 custom-scrollbar">
+          <div class="flex items-center space-x-2 border-b border-zinc-800 overflow-x-auto custom-scrollbar pb-2">
             {[
               { id: 'orders', label: '📦 Orders List' },
-              { id: 'products', label: '🧵 Holistic Product CRUD (With Images & Dynamic Brands)' },
+              { id: 'create', label: '➕ New Order (AI & Manual)' },
+              { id: 'products', label: '🧵 Holistic Product CRUD (Images, Brands, Custom Categories)' },
               { id: 'customizer', label: '🎨 DIY Website Customizer' },
               { id: 'gsheets', label: '🟢 CSV Import & Dedupe' },
+              { id: 'analytics', label: '🎥 Video Revenue' },
             ].map(tab => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                class={`px-4 py-2 rounded-xl text-xs font-semibold shrink-0 transition ${activeTab === tab.id ? 'bg-slate-900 text-white shadow-xs' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'}`}
+                class={`px-4 py-2.5 rounded-xl text-xs font-semibold shrink-0 transition ${activeTab === tab.id ? 'bg-amber-500 text-black shadow' : 'bg-zinc-900 text-zinc-400 hover:text-zinc-200'}`}
               >
                 <span>{tab.label}</span>
               </button>
@@ -1049,7 +1100,11 @@
           </div>
 
           {activeTab === 'orders' && (
-            <OmsOrdersTab orders={orders} saveOrdersState={saveOrdersState} onSelectOrder={setSelectedOrderForDrawer} />
+            <OmsOrdersTab orders={orders} saveOrdersState={saveOrdersState} onSelectOrder={setSelectedOrderForDrawer} onGoCreate={() => setActiveTab('create')} />
+          )}
+
+          {activeTab === 'create' && (
+            <OmsCreateOrderTab products={products} orders={orders} saveOrdersState={saveOrdersState} onSuccess={() => setActiveTab('orders')} />
           )}
 
           {activeTab === 'products' && (
@@ -1072,53 +1127,197 @@
           {activeTab === 'gsheets' && (
             <OmsCsvImportAndDedupeTab orders={orders} saveOrdersState={saveOrdersState} />
           )}
+
+          {activeTab === 'analytics' && (
+            <OmsAnalyticsTab orders={orders} />
+          )}
         </div>
       );
     }
 
-    function OmsOrdersTab({ orders, saveOrdersState, onSelectOrder }) {
+    function OmsOrdersTab({ orders, saveOrdersState, onSelectOrder, onGoCreate }) {
       return (
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {orders.map(order => (
-            <div key={order.id} onClick={() => onSelectOrder(order)} class="bg-white border border-slate-200 p-5 rounded-2xl cursor-pointer hover:border-slate-400 transition space-y-3 shadow-xs">
-              <div class="flex justify-between items-center">
-                <span class="font-heading font-extrabold text-amber-700 text-xs">{order.id}</span>
-                <span class="text-[10px] font-bold uppercase bg-slate-100 px-2 py-0.5 rounded border border-slate-200">{order.orderStatus}</span>
+        <div class="space-y-4">
+          <div class="flex justify-between items-center">
+            <h3 class="font-heading font-bold text-xl text-white">Orders List & Lifecycle</h3>
+            <button onClick={onGoCreate} class="bg-amber-500 text-black font-bold px-4 py-2.5 rounded-xl text-xs">+ Create Order</button>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {orders.map(order => (
+              <div key={order.id} onClick={() => onSelectOrder(order)} class="bg-zinc-900 border border-zinc-800 hover:border-amber-500/40 p-5 rounded-2xl cursor-pointer space-y-3">
+                <div class="flex items-center justify-between">
+                  <span class="font-heading font-extrabold text-amber-400 text-sm">{order.id}</span>
+                  <span class="text-[10px] font-bold uppercase bg-zinc-800 text-amber-300 px-2 py-0.5 rounded">{order.orderStatus}</span>
+                </div>
+                <div>
+                  <h4 class="font-heading font-bold text-white text-base">{order.customer.name}</h4>
+                  <p class="text-xs text-zinc-400">📞 {order.customer.phone}</p>
+                </div>
+                <div class="flex justify-between text-xs pt-2 border-t border-zinc-800">
+                  <span class="text-zinc-400">{order.fabricDescription}</span>
+                  <span class="font-bold text-white">₹{order.totalAmount}</span>
+                </div>
               </div>
-              <div>
-                <h4 class="font-heading font-bold text-slate-900 text-sm">{order.customer.name}</h4>
-                <p class="text-xs text-slate-500">📞 {order.customer.phone}</p>
-              </div>
-              <div class="text-xs flex justify-between pt-2 border-t border-slate-100">
-                <span class="text-slate-500">Fabric: {order.fabricDescription}</span>
-                <span class="font-bold text-slate-900">₹{order.totalAmount}</span>
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       );
     }
 
-    // --- HOLISTIC PRODUCT CRUD WITH DYNAMIC BRANDS & IMAGE PICKER ---
+    function OmsCreateOrderTab({ products, orders, saveOrdersState, onSuccess }) {
+      const [entryType, setEntryType] = useState('ai');
+      const [aiScanning, setAiScanning] = useState(false);
+      const [extractedDraft, setExtractedDraft] = useState(null);
+
+      const [custName, setCustName] = useState('');
+      const [custPhone, setCustPhone] = useState('');
+      const [custAddress, setCustAddress] = useState('');
+      const [videoCode, setVideoCode] = useState('Video no 18');
+      const [selectedProdId, setSelectedProdId] = useState(products[0]?.id || '');
+      const [qty, setQty] = useState(2);
+
+      const handleSimulateAiUpload = () => {
+        setAiScanning(true);
+        setTimeout(() => {
+          setAiScanning(false);
+          setExtractedDraft({
+            customerName: 'Atish Kumar',
+            phoneNumber: '9885616510',
+            address: 'Government Junior College Thunkul, AP',
+            videoAttribution: 'Video no 13',
+            fabricDescription: 'Soktas shirt checks',
+            quantity: '2 pc',
+            totalAmount: 1600,
+            amountPaid: 1600
+          });
+        }, 1200);
+      };
+
+      const handleConfirmAiDraft = () => {
+        if (!extractedDraft) return;
+        const newOrder = {
+          id: `HT-${1000 + orders.length + 1}`,
+          ie: orders.length + 1,
+          date: new Date().toLocaleDateString('en-GB'),
+          customer: { name: extractedDraft.customerName, phone: extractedDraft.phoneNumber, address: extractedDraft.address },
+          videoAttribution: extractedDraft.videoAttribution,
+          fabricDescription: extractedDraft.fabricDescription,
+          quantity: extractedDraft.quantity,
+          totalAmount: extractedDraft.totalAmount,
+          amountPaid: extractedDraft.amountPaid,
+          balanceAmount: 0,
+          paymentStatus: 'PAID',
+          orderStatus: 'CONFIRMED',
+          source: 'WhatsApp Direct'
+        };
+        saveOrdersState([newOrder, ...orders]);
+        onSuccess();
+      };
+
+      const handleCreateManualOrder = (e) => {
+        e.preventDefault();
+        const selProd = products.find(p => p.id === selectedProdId);
+        const total = (selProd?.sellingPrice || 800) * qty;
+        const newOrder = {
+          id: `HT-${1000 + orders.length + 1}`,
+          ie: orders.length + 1,
+          date: new Date().toLocaleDateString('en-GB'),
+          customer: { name: custName, phone: custPhone, address: custAddress },
+          videoAttribution: videoCode,
+          fabricDescription: selProd ? selProd.name : 'Custom Fabric',
+          quantity: `${qty} pc`,
+          totalAmount: total,
+          amountPaid: total,
+          balanceAmount: 0,
+          paymentStatus: 'PAID',
+          orderStatus: 'CONFIRMED',
+          source: 'Manual Entry'
+        };
+        saveOrdersState([newOrder, ...orders]);
+        onSuccess();
+      };
+
+      return (
+        <div class="max-w-3xl mx-auto space-y-6">
+          <div class="bg-zinc-900 p-2 rounded-2xl border border-zinc-800 flex space-x-2">
+            <button onClick={() => setEntryType('ai')} class={`flex-1 py-3 rounded-xl font-heading font-bold text-xs ${entryType === 'ai' ? 'bg-amber-500 text-black shadow' : 'text-zinc-400'}`}>🤖 AI Screenshot / Video Upload</button>
+            <button onClick={() => setEntryType('manual')} class={`flex-1 py-3 rounded-xl font-heading font-bold text-xs ${entryType === 'manual' ? 'bg-amber-500 text-black shadow' : 'text-zinc-400'}`}>✍️ Manual Order Form</button>
+          </div>
+
+          {entryType === 'ai' ? (
+            <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 space-y-4">
+              <h3 class="font-heading font-bold text-xl text-white">Gemini AI Order OCR Parser</h3>
+              <div class="border-2 border-dashed border-zinc-700 hover:border-amber-500 rounded-2xl p-8 text-center space-y-4 bg-zinc-950/50">
+                <div class="text-4xl">📸 🎥</div>
+                <button onClick={handleSimulateAiUpload} class="bg-amber-500 text-black font-bold px-4 py-2 rounded-xl text-xs">Simulate OCR Extraction</button>
+              </div>
+              {aiScanning && <div class="text-amber-400 text-xs">Parsing media...</div>}
+              {extractedDraft && !aiScanning && (
+                <div class="bg-zinc-950 p-4 rounded-xl border border-zinc-800 space-y-3 text-xs">
+                  <div class="text-amber-400 font-bold">Extracted Draft Review: {extractedDraft.customerName} ({extractedDraft.phoneNumber})</div>
+                  <button onClick={handleConfirmAiDraft} class="bg-amber-500 text-black font-bold py-2 rounded-xl text-xs w-full">Confirm Order ✓</button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <form onSubmit={handleCreateManualOrder} class="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 space-y-4 text-xs">
+              <h3 class="font-heading font-bold text-xl text-white">Create Order Manually</h3>
+              <div class="grid grid-cols-2 gap-3">
+                <div><label class="text-zinc-400">Customer Name *</label><input type="text" required value={custName} onChange={e=>setCustName(e.target.value)} class="w-full bg-zinc-950 p-2.5 text-white border border-zinc-800 rounded-xl" /></div>
+                <div><label class="text-zinc-400">Phone *</label><input type="text" required value={custPhone} onChange={e=>setCustPhone(e.target.value)} class="w-full bg-zinc-950 p-2.5 text-white border border-zinc-800 rounded-xl" /></div>
+              </div>
+              <button type="submit" class="bg-amber-500 text-black font-bold px-6 py-3 rounded-xl text-xs">Save Order</button>
+            </form>
+          )}
+        </div>
+      );
+    }
+
+    // --- HOLISTIC PRODUCT CRUD WITH DYNAMIC BRANDS, CUSTOM CATEGORIES & MULTI-IMAGE THUMBNAILS ---
     function OmsHolisticProductsTab({ products, saveProductsState, brandsList, categoriesList, addDynamicBrand, addDynamicCategory, onEditRow, onAdjustStock }) {
       const [showAddModal, setShowAddModal] = useState(false);
       const [newProdName, setNewProdName] = useState('');
       const [newProdBrand, setNewProdBrand] = useState(brandsList[0] || 'Soktas');
       const [customBrandInput, setCustomBrandInput] = useState('');
-      const [isAddingCustomBrand, setIsAddingCustomBrand] = useState(false);
+      const [isAddingBrand, setIsAddingBrand] = useState(false);
 
       const [newProdCategory, setNewProdCategory] = useState(categoriesList[0] || 'Shirting');
+      const [customCategoryInput, setCustomCategoryInput] = useState('');
+      const [isAddingCategory, setIsAddingCategory] = useState(false);
+
       const [newProdPrice, setNewProdPrice] = useState(800);
       const [newProdMrp, setNewProdMrp] = useState(1500);
       const [newProdStock, setNewProdStock] = useState(30);
-      const [newProdImg, setNewProdImg] = useState(PRESET_FABRIC_IMAGES[0].url);
+
+      // Multi-Image Gallery State
+      const [galleryUrls, setGalleryUrls] = useState([PRESET_FABRIC_IMAGES[0].url]);
+
+      const handleAddImageThumbnail = () => {
+        setGalleryUrls([...galleryUrls, PRESET_FABRIC_IMAGES[galleryUrls.length % PRESET_FABRIC_IMAGES.length].url]);
+      };
+
+      const handleRemoveImageThumbnail = (idx) => {
+        if (galleryUrls.length <= 1) return alert("Must keep at least 1 image!");
+        setGalleryUrls(galleryUrls.filter((_, i) => i !== idx));
+      };
+
+      const handleUpdateImageUrl = (idx, newUrl) => {
+        setGalleryUrls(galleryUrls.map((url, i) => i === idx ? newUrl : url));
+      };
 
       const handleAddProduct = (e) => {
         e.preventDefault();
         let targetBrand = newProdBrand;
-        if (isAddingCustomBrand && customBrandInput.trim()) {
+        if (isAddingBrand && customBrandInput.trim()) {
           targetBrand = customBrandInput.trim();
           addDynamicBrand(targetBrand);
+        }
+
+        let targetCategory = newProdCategory;
+        if (isAddingCategory && customCategoryInput.trim()) {
+          targetCategory = customCategoryInput.trim();
+          addDynamicCategory(targetCategory);
         }
 
         const created = {
@@ -1126,7 +1325,7 @@
           sku: `HT-NEW-${100 + products.length}`,
           name: newProdName,
           brand: targetBrand,
-          category: newProdCategory,
+          category: targetCategory,
           fabricType: '100% Cotton',
           mrpPrice: Number(newProdMrp),
           sellingPrice: Number(newProdPrice),
@@ -1134,11 +1333,12 @@
           currentStock: Number(newProdStock),
           lowStockThreshold: 8,
           featuredInVideos: ['Video no 18'],
-          imageUrl: newProdImg,
-          galleryImages: [newProdImg],
+          imageUrl: galleryUrls[0] || PRESET_FABRIC_IMAGES[0].url,
+          galleryImages: galleryUrls,
           isActive: true,
-          description: 'New fabric stock item.'
+          description: 'New fabric inventory item.'
         };
+
         saveProductsState([created, ...products]);
         setShowAddModal(false);
       };
@@ -1154,116 +1354,150 @@
       };
 
       const deleteProductRow = (productId) => {
-        if (confirm("Archive this fabric item?")) saveProductsState(products.filter(p => p.id !== productId));
+        if (confirm("Archive this inventory row?")) saveProductsState(products.filter(p => p.id !== productId));
       };
 
       return (
         <div class="space-y-6">
           <div class="flex justify-between items-center">
-            <h3 class="font-heading font-bold text-lg text-slate-900">Inventory Master (With Image Uploader & Dynamic Brands)</h3>
-            <button onClick={() => setShowAddModal(true)} class="bg-slate-900 text-white font-bold px-4 py-2 rounded-xl text-xs shadow-xs">
-              + Add New Inventory Row
+            <div>
+              <h3 class="font-heading font-bold text-xl text-white">Holistic Inventory Row Management</h3>
+              <p class="text-xs text-zinc-400">Dynamic Brands, Custom Categories & Multi-Image Gallery Manager</p>
+            </div>
+            <button onClick={() => setShowAddModal(true)} class="bg-amber-500 text-black font-bold px-4 py-2.5 rounded-xl text-xs shadow">
+              + Add New Fabric Item
             </button>
           </div>
 
           {/* ADD PRODUCT MODAL */}
           {showAddModal && (
-            <form onSubmit={handleAddProduct} class="bg-white border border-slate-200 p-5 rounded-2xl space-y-4 shadow-md max-w-2xl">
-              <h4 class="font-heading font-bold text-slate-900 text-sm border-b pb-2">Add Fabric Inventory Row</h4>
+            <form onSubmit={handleAddProduct} class="bg-zinc-900 border border-zinc-700 rounded-3xl p-6 space-y-4 max-w-2xl mx-auto shadow-2xl">
+              <div class="flex justify-between border-b border-zinc-800 pb-3">
+                <h4 class="font-heading font-bold text-lg text-white">Add New Fabric Inventory Row</h4>
+                <button type="button" onClick={() => setShowAddModal(false)} class="text-zinc-400">✕</button>
+              </div>
+
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                 <div class="sm:col-span-2">
-                  <label class="text-slate-600 font-semibold">Fabric Name</label>
-                  <input type="text" required value={newProdName} onChange={e=>setNewProdName(e.target.value)} class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-bold" />
+                  <label class="text-zinc-400">Fabric Name *</label>
+                  <input type="text" required value={newProdName} onChange={e=>setNewProdName(e.target.value)} class="w-full bg-zinc-950 p-2.5 text-white border border-zinc-800 rounded-xl font-bold" />
                 </div>
-                
-                {/* DYNAMIC BRAND SELECTOR */}
+
+                {/* DYNAMIC BRAND CREATOR */}
                 <div>
-                  <label class="text-slate-600 font-semibold">Brand</label>
-                  {!isAddingCustomBrand ? (
+                  <label class="text-zinc-400">Brand</label>
+                  {!isAddingBrand ? (
                     <div class="flex space-x-1.5 mt-1">
-                      <select value={newProdBrand} onChange={e=>setNewProdBrand(e.target.value)} class="flex-1 bg-slate-50 border border-slate-300 rounded-lg p-2">
+                      <select value={newProdBrand} onChange={e=>setNewProdBrand(e.target.value)} class="flex-1 bg-zinc-950 text-white border border-zinc-800 rounded-xl p-2.5">
                         {brandsList.map(b=><option key={b} value={b}>{b}</option>)}
                       </select>
-                      <button type="button" onClick={() => setIsAddingCustomBrand(true)} class="bg-amber-100 text-amber-800 font-bold px-2 py-1 rounded-lg text-[11px]">
+                      <button type="button" onClick={() => setIsAddingBrand(true)} class="bg-amber-500/20 text-amber-400 border border-amber-500/30 px-2 py-1 rounded-xl text-xs font-bold">
                         + New
                       </button>
                     </div>
                   ) : (
                     <div class="flex space-x-1.5 mt-1">
-                      <input type="text" placeholder="Type Brand Name..." value={customBrandInput} onChange={e=>setCustomBrandInput(e.target.value)} class="flex-1 bg-slate-50 border border-slate-300 rounded-lg p-2 font-bold text-slate-900" />
-                      <button type="button" onClick={() => setIsAddingCustomBrand(false)} class="text-xs text-slate-400">Cancel</button>
+                      <input type="text" placeholder="Type Brand..." value={customBrandInput} onChange={e=>setCustomBrandInput(e.target.value)} class="flex-1 bg-zinc-950 text-white border border-zinc-800 rounded-xl p-2 font-bold" />
+                      <button type="button" onClick={() => setIsAddingBrand(false)} class="text-xs text-zinc-500">Cancel</button>
                     </div>
                   )}
                 </div>
 
+                {/* DYNAMIC CATEGORY CREATOR */}
                 <div>
-                  <label class="text-slate-600 font-semibold">Category</label>
-                  <select value={newProdCategory} onChange={e=>setNewProdCategory(e.target.value)} class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 mt-1">
-                    {categoriesList.map(c=><option key={c} value={c}>{c}</option>)}
-                  </select>
+                  <label class="text-zinc-400">Category</label>
+                  {!isAddingCategory ? (
+                    <div class="flex space-x-1.5 mt-1">
+                      <select value={newProdCategory} onChange={e=>setNewProdCategory(e.target.value)} class="flex-1 bg-zinc-950 text-white border border-zinc-800 rounded-xl p-2.5">
+                        {categoriesList.map(c=><option key={c} value={c}>{c}</option>)}
+                      </select>
+                      <button type="button" onClick={() => setIsAddingCategory(true)} class="bg-amber-500/20 text-amber-400 border border-amber-500/30 px-2 py-1 rounded-xl text-xs font-bold">
+                        + New
+                      </button>
+                    </div>
+                  ) : (
+                    <div class="flex space-x-1.5 mt-1">
+                      <input type="text" placeholder="e.g. Suit Piece..." value={customCategoryInput} onChange={e=>setCustomCategoryInput(e.target.value)} class="flex-1 bg-zinc-950 text-white border border-zinc-800 rounded-xl p-2 font-bold" />
+                      <button type="button" onClick={() => setIsAddingCategory(false)} class="text-xs text-zinc-500">Cancel</button>
+                    </div>
+                  )}
                 </div>
 
-                <div><label class="text-slate-600 font-semibold">Selling Price (₹)</label><input type="number" required value={newProdPrice} onChange={e=>setNewProdPrice(e.target.value)} class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 mt-1 font-bold" /></div>
-                <div><label class="text-slate-600 font-semibold">MRP Price (₹)</label><input type="number" value={newProdMrp} onChange={e=>setNewProdMrp(e.target.value)} class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 mt-1" /></div>
-                
-                {/* IMAGE URL & PRESET PICKER */}
-                <div class="sm:col-span-2 space-y-2">
-                  <label class="text-slate-600 font-semibold">Fabric Photo URL</label>
-                  <div class="flex space-x-2">
-                    <input type="text" value={newProdImg} onChange={e=>setNewProdImg(e.target.value)} class="flex-1 bg-slate-50 border border-slate-300 rounded-lg p-2 font-mono text-[11px]" />
-                    <img src={newProdImg} class="w-9 h-9 rounded-lg object-cover border border-slate-300 shrink-0" />
+                <div><label class="text-zinc-400">Selling Price (₹)</label><input type="number" required value={newProdPrice} onChange={e=>setNewProdPrice(e.target.value)} class="w-full bg-zinc-950 p-2.5 text-white border border-zinc-800 rounded-xl font-bold" /></div>
+                <div><label class="text-zinc-400">MRP Price (₹)</label><input type="number" value={newProdMrp} onChange={e=>setNewProdMrp(e.target.value)} class="w-full bg-zinc-950 p-2.5 text-white border border-zinc-800 rounded-xl" /></div>
+                <div><label class="text-zinc-400">Initial Stock</label><input type="number" value={newProdStock} onChange={e=>setNewProdStock(e.target.value)} class="w-full bg-zinc-950 p-2.5 text-white border border-zinc-800 rounded-xl" /></div>
+
+                {/* MULTI-IMAGE THUMBNAIL MANAGER */}
+                <div class="sm:col-span-2 space-y-3 border-t border-zinc-800 pt-3">
+                  <div class="flex justify-between items-center">
+                    <label class="text-amber-400 font-bold">Product Image Gallery Manager</label>
+                    <button type="button" onClick={handleAddImageThumbnail} class="bg-zinc-800 text-amber-400 text-xs px-2.5 py-1 rounded-lg border border-zinc-700">
+                      + Add Gallery Photo
+                    </button>
                   </div>
 
-                  <div class="text-[10px] text-slate-500">Or Select from Preset Fabric Photos:</div>
+                  <div class="space-y-2">
+                    {galleryUrls.map((url, idx) => (
+                      <div key={idx} class="flex space-x-2 items-center">
+                        <img src={url} class="w-9 h-9 rounded-lg object-cover border border-zinc-700 shrink-0" />
+                        <input type="text" value={url} onChange={e => handleUpdateImageUrl(idx, e.target.value)} class="flex-1 bg-zinc-950 p-2 text-white border border-zinc-800 rounded-xl font-mono text-[11px]" />
+                        <button type="button" onClick={() => handleRemoveImageThumbnail(idx)} class="bg-red-950 text-red-400 font-bold px-2.5 py-1 rounded-lg border border-red-800">
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div class="text-[10px] text-zinc-500">Preset Gallery Quick Pick:</div>
                   <div class="flex space-x-2 overflow-x-auto pb-1 custom-scrollbar">
                     {PRESET_FABRIC_IMAGES.map((preset, i) => (
-                      <img key={i} src={preset.url} onClick={() => setNewProdImg(preset.url)} class={`w-10 h-10 rounded-lg object-cover cursor-pointer border-2 ${newProdImg === preset.url ? 'border-amber-500' : 'border-slate-200'}`} title={preset.name} />
+                      <img key={i} src={preset.url} onClick={() => setGalleryUrls([preset.url])} class="w-10 h-10 rounded-lg object-cover cursor-pointer border border-zinc-700" title={preset.name} />
                     ))}
                   </div>
                 </div>
               </div>
 
-              <div class="flex justify-end space-x-2 pt-2 border-t">
-                <button type="button" onClick={() => setShowAddModal(false)} class="px-3 py-1.5 bg-slate-100 text-slate-700 text-xs rounded-lg">Cancel</button>
-                <button type="submit" class="px-4 py-1.5 bg-slate-900 text-white font-bold text-xs rounded-lg">Save Inventory Item</button>
+              <div class="flex justify-end space-x-2 pt-2 border-t border-zinc-800">
+                <button type="button" onClick={() => setShowAddModal(false)} class="px-4 py-2 bg-zinc-800 text-xs text-zinc-300 rounded-xl">Cancel</button>
+                <button type="submit" class="px-6 py-2 bg-amber-500 text-black font-bold text-xs rounded-xl shadow">Save Fabric Item</button>
               </div>
             </form>
           )}
 
           {/* TABLE */}
-          <div class="bg-white border border-slate-200 rounded-2xl overflow-x-auto shadow-xs">
+          <div class="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-x-auto">
             <table class="w-full text-left text-xs">
-              <thead class="bg-slate-100 text-slate-600 font-semibold uppercase border-b">
+              <thead class="bg-zinc-950 text-zinc-400 font-semibold uppercase border-b border-zinc-800">
                 <tr>
                   <th class="p-3">Photo</th>
-                  <th class="p-3">Product / SKU</th>
-                  <th class="p-3">Brand</th>
+                  <th class="p-3">Item / SKU</th>
+                  <th class="p-3">Brand & Category</th>
                   <th class="p-3">Price</th>
-                  <th class="p-3">Stock</th>
+                  <th class="p-3">Stock Level</th>
                   <th class="p-3">Visibility</th>
                   <th class="p-3 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody class="divide-y text-slate-800">
+              <tbody class="divide-y divide-zinc-800 text-zinc-300">
                 {products.map(p => (
-                  <tr key={p.id} class={`hover:bg-slate-50 ${!p.isActive ? 'opacity-50' : ''}`}>
-                    <td class="p-2.5"><img src={p.imageUrl} class="w-10 h-10 rounded-lg object-cover border" /></td>
-                    <td class="p-3 font-bold text-slate-900">{p.name}<div class="text-[10px] text-slate-400 font-mono">SKU: {p.sku}</div></td>
-                    <td class="p-3 font-semibold text-slate-700">{p.brand}</td>
-                    <td class="p-3 font-bold text-slate-900">₹{p.sellingPrice}</td>
+                  <tr key={p.id} class={`hover:bg-zinc-850 ${!p.isActive ? 'opacity-50 bg-zinc-950/50' : ''}`}>
+                    <td class="p-2.5"><img src={p.imageUrl} class="w-10 h-10 rounded-lg object-cover border border-zinc-800" /></td>
+                    <td class="p-3 font-bold text-white">{p.name}<div class="text-[10px] text-zinc-500 font-mono">SKU: {p.sku}</div></td>
+                    <td class="p-3"><span class="text-amber-400 font-semibold">{p.brand}</span><div class="text-[10px] text-zinc-500">{p.category}</div></td>
+                    <td class="p-3 font-bold text-white">₹{p.sellingPrice}</td>
                     <td class="p-3">
                       <span class="font-bold">{p.currentStock} {p.unit}</span>
-                      <button onClick={() => onAdjustStock(p)} class="ml-2 text-[10px] bg-slate-100 border px-1.5 py-0.5 rounded">+/-</button>
+                      <button onClick={() => onAdjustStock(p)} class="ml-2 text-[10px] bg-zinc-800 border border-zinc-700 px-1.5 py-0.5 rounded">+/-</button>
                     </td>
                     <td class="p-3">
-                      <button onClick={() => toggleProductActive(p.id)} class={`px-2.5 py-1 rounded text-[10px] font-bold ${p.isActive ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-500'}`}>
+                      <button onClick={() => toggleProductActive(p.id)} class={`px-2.5 py-1 rounded text-[10px] font-bold ${p.isActive ? 'bg-emerald-950 text-emerald-400 border border-emerald-800' : 'bg-zinc-800 text-zinc-400'}`}>
                         {p.isActive ? '👁️ Visible' : '🙈 Hidden'}
                       </button>
                     </td>
                     <td class="p-3 text-right space-x-1">
-                      <button onClick={() => onEditRow(p)} class="bg-slate-100 text-slate-900 px-2 py-1 rounded text-[10px] font-semibold">✏️ Edit</button>
-                      <button onClick={() => duplicateProductRow(p)} class="bg-slate-100 text-slate-700 px-2 py-1 rounded text-[10px]">📋 Clone</button>
-                      <button onClick={() => deleteProductRow(p.id)} class="bg-red-50 text-red-600 px-2 py-1 rounded text-[10px]">🗑️</button>
+                      <button onClick={() => onEditRow(p)} class="bg-zinc-800 text-amber-400 px-2 py-1 rounded text-[10px]">✏️ Edit</button>
+                      <button onClick={() => duplicateProductRow(p)} class="bg-zinc-800 text-zinc-300 px-2 py-1 rounded text-[10px]">📋 Clone</button>
+                      <button onClick={() => deleteProductRow(p.id)} class="bg-red-950 text-red-400 px-2 py-1 rounded text-[10px]">🗑️</button>
                     </td>
                   </tr>
                 ))}
@@ -1274,11 +1508,29 @@
       );
     }
 
-    // --- HOLISTIC EDIT MODAL WITH IMAGE UPLOADER & DYNAMIC BRANDS ---
+    // --- HOLISTIC EDIT MODAL (WITH MULTI-IMAGE THUMBNAIL MANAGER) ---
     function EditProductModal({ product, brandsList, categoriesList, addDynamicBrand, addDynamicCategory, onClose, onSave }) {
       const [form, setForm] = useState({ ...product });
+      const [galleryUrls, setGalleryUrls] = useState(
+        product.galleryImages && product.galleryImages.length > 0 ? product.galleryImages : [product.imageUrl]
+      );
       const [newCustomBrand, setNewCustomBrand] = useState('');
       const [isAddingBrand, setIsAddingBrand] = useState(false);
+      const [newCustomCat, setNewCustomCat] = useState('');
+      const [isAddingCat, setIsAddingCat] = useState(false);
+
+      const handleAddImageThumbnail = () => {
+        setGalleryUrls([...galleryUrls, PRESET_FABRIC_IMAGES[galleryUrls.length % PRESET_FABRIC_IMAGES.length].url]);
+      };
+
+      const handleRemoveImageThumbnail = (idx) => {
+        if (galleryUrls.length <= 1) return alert("Product must retain at least 1 image!");
+        setGalleryUrls(galleryUrls.filter((_, i) => i !== idx));
+      };
+
+      const handleUpdateImageUrl = (idx, newUrl) => {
+        setGalleryUrls(galleryUrls.map((url, i) => i === idx ? newUrl : url));
+      };
 
       const handleSave = (e) => {
         e.preventDefault();
@@ -1287,63 +1539,99 @@
           targetBrand = newCustomBrand.trim();
           addDynamicBrand(targetBrand);
         }
-        onSave({ ...form, brand: targetBrand });
+
+        let targetCat = form.category;
+        if (isAddingCat && newCustomCat.trim()) {
+          targetCat = newCustomCat.trim();
+          addDynamicCategory(targetCat);
+        }
+
+        onSave({ 
+          ...form, 
+          brand: targetBrand, 
+          category: targetCat, 
+          imageUrl: galleryUrls[0], 
+          galleryImages: galleryUrls 
+        });
       };
 
       return (
-        <div class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <form onSubmit={handleSave} class="bg-white border border-slate-200 rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
-            <div class="flex justify-between items-center border-b pb-3">
-              <h3 class="font-heading font-bold text-lg text-slate-900">Edit Inventory Item Row</h3>
-              <button type="button" onClick={onClose} class="text-slate-400">✕</button>
+        <div class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <form onSubmit={handleSave} class="bg-zinc-900 border border-zinc-700 rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
+            <div class="flex justify-between items-center border-b border-zinc-800 pb-3">
+              <h3 class="font-heading font-bold text-lg text-white">Edit Inventory Item & Gallery</h3>
+              <button type="button" onClick={onClose} class="text-zinc-400">✕</button>
             </div>
 
             <div class="grid grid-cols-2 gap-3 text-xs">
               <div class="col-span-2">
-                <label class="text-slate-600 font-semibold">Product Name</label>
-                <input type="text" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-slate-900 font-bold" />
+                <label class="text-zinc-400">Product Name</label>
+                <input type="text" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} class="w-full bg-zinc-950 p-2.5 text-white border border-zinc-800 rounded-xl font-bold" />
               </div>
 
               <div>
-                <label class="text-slate-600 font-semibold">Brand</label>
+                <label class="text-zinc-400">Brand</label>
                 {!isAddingBrand ? (
                   <div class="flex space-x-1 mt-1">
-                    <select value={form.brand} onChange={e => setForm({ ...form, brand: e.target.value })} class="flex-1 bg-slate-50 border border-slate-300 rounded-lg p-2">
+                    <select value={form.brand} onChange={e => setForm({ ...form, brand: e.target.value })} class="flex-1 bg-zinc-950 text-white border border-zinc-800 rounded-xl p-2">
                       {brandsList.map(b=><option key={b} value={b}>{b}</option>)}
                     </select>
-                    <button type="button" onClick={() => setIsAddingBrand(true)} class="bg-amber-100 text-amber-800 text-[10px] font-bold px-2 rounded-lg">+ Custom</button>
+                    <button type="button" onClick={() => setIsAddingBrand(true)} class="bg-amber-500/20 text-amber-400 text-[10px] font-bold px-2 rounded-lg">+ Custom</button>
                   </div>
                 ) : (
                   <div class="flex space-x-1 mt-1">
-                    <input type="text" placeholder="Custom Brand..." value={newCustomBrand} onChange={e => setNewCustomBrand(e.target.value)} class="flex-1 bg-slate-50 border border-slate-300 rounded-lg p-2 text-slate-900 font-bold" />
-                    <button type="button" onClick={() => setIsAddingBrand(false)} class="text-xs text-slate-400">Cancel</button>
+                    <input type="text" placeholder="Custom Brand..." value={newCustomBrand} onChange={e => setNewCustomBrand(e.target.value)} class="flex-1 bg-zinc-950 text-white border border-zinc-800 rounded-xl p-2 font-bold" />
+                    <button type="button" onClick={() => setIsAddingBrand(false)} class="text-xs text-zinc-500">Cancel</button>
                   </div>
                 )}
               </div>
 
-              <div><label class="text-slate-600 font-semibold">Selling Price (₹)</label><input type="number" value={form.sellingPrice} onChange={e => setForm({ ...form, sellingPrice: Number(e.target.value) })} class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-bold" /></div>
-              <div><label class="text-slate-600 font-semibold">MRP Price (₹)</label><input type="number" value={form.mrpPrice || ''} onChange={e => setForm({ ...form, mrpPrice: Number(e.target.value) })} class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2" /></div>
-              <div><label class="text-slate-600 font-semibold">Stock Quantity</label><input type="number" value={form.currentStock} onChange={e => setForm({ ...form, currentStock: Number(e.target.value) })} class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2" /></div>
+              <div>
+                <label class="text-zinc-400">Category</label>
+                {!isAddingCat ? (
+                  <div class="flex space-x-1 mt-1">
+                    <select value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} class="flex-1 bg-zinc-950 text-white border border-zinc-800 rounded-xl p-2">
+                      {categoriesList.map(c=><option key={c} value={c}>{c}</option>)}
+                    </select>
+                    <button type="button" onClick={() => setIsAddingCat(true)} class="bg-amber-500/20 text-amber-400 text-[10px] font-bold px-2 rounded-lg">+ Custom</button>
+                  </div>
+                ) : (
+                  <div class="flex space-x-1 mt-1">
+                    <input type="text" placeholder="e.g. Suit Piece..." value={newCustomCat} onChange={e => setNewCustomCat(e.target.value)} class="flex-1 bg-zinc-950 text-white border border-zinc-800 rounded-xl p-2 font-bold" />
+                    <button type="button" onClick={() => setIsAddingCat(false)} class="text-xs text-zinc-500">Cancel</button>
+                  </div>
+                )}
+              </div>
 
-              {/* IMAGE URL & LIVE PREVIEW */}
-              <div class="col-span-2 space-y-2">
-                <label class="text-slate-600 font-semibold">Fabric Photo URL</label>
-                <div class="flex space-x-2">
-                  <input type="text" value={form.imageUrl} onChange={e => setForm({ ...form, imageUrl: e.target.value })} class="flex-1 bg-slate-50 border border-slate-300 rounded-lg p-2 font-mono text-[11px]" />
-                  <img src={form.imageUrl} class="w-10 h-10 rounded-lg object-cover border" />
+              <div><label class="text-zinc-400">Selling Price (₹)</label><input type="number" value={form.sellingPrice} onChange={e => setForm({ ...form, sellingPrice: Number(e.target.value) })} class="w-full bg-zinc-950 p-2.5 text-white border border-zinc-800 rounded-xl font-bold" /></div>
+              <div><label class="text-zinc-400">MRP Price (₹)</label><input type="number" value={form.mrpPrice || ''} onChange={e => setForm({ ...form, mrpPrice: Number(e.target.value) })} class="w-full bg-zinc-950 p-2.5 text-white border border-zinc-800 rounded-xl" /></div>
+
+              {/* MULTI-IMAGE THUMBNAIL MANAGER */}
+              <div class="col-span-2 space-y-3 border-t border-zinc-800 pt-3">
+                <div class="flex justify-between items-center">
+                  <label class="text-amber-400 font-bold">Multi-Image Thumbnails (Upload / Edit / Remove)</label>
+                  <button type="button" onClick={handleAddImageThumbnail} class="bg-zinc-800 text-amber-400 text-xs px-2.5 py-1 rounded-lg border border-zinc-700">
+                    + Add Photo
+                  </button>
                 </div>
-                <div class="text-[10px] text-slate-500">Pick Preset Photo:</div>
-                <div class="flex space-x-2 overflow-x-auto pb-1 custom-scrollbar">
-                  {PRESET_FABRIC_IMAGES.map((preset, i) => (
-                    <img key={i} src={preset.url} onClick={() => setForm({ ...form, imageUrl: preset.url })} class={`w-9 h-9 rounded-lg object-cover cursor-pointer border-2 ${form.imageUrl === preset.url ? 'border-amber-500' : 'border-slate-200'}`} />
+
+                <div class="space-y-2">
+                  {galleryUrls.map((url, idx) => (
+                    <div key={idx} class="flex space-x-2 items-center">
+                      <img src={url} class="w-9 h-9 rounded-lg object-cover border border-zinc-700 shrink-0" />
+                      <input type="text" value={url} onChange={e => handleUpdateImageUrl(idx, e.target.value)} class="flex-1 bg-zinc-950 p-2 text-white border border-zinc-800 rounded-xl font-mono text-[11px]" />
+                      <button type="button" onClick={() => handleRemoveImageThumbnail(idx)} class="bg-red-950 text-red-400 font-bold px-2.5 py-1 rounded-lg border border-red-800">
+                        ✕
+                      </button>
+                    </div>
                   ))}
                 </div>
               </div>
             </div>
 
-            <div class="flex justify-end space-x-2 pt-2 border-t">
-              <button type="button" onClick={onClose} class="px-4 py-2 bg-slate-100 text-xs text-slate-700 rounded-xl">Cancel</button>
-              <button type="submit" class="px-5 py-2 bg-slate-900 text-white font-bold text-xs rounded-xl shadow-xs">Save Changes</button>
+            <div class="flex justify-end space-x-2 pt-2 border-t border-zinc-800">
+              <button type="button" onClick={onClose} class="px-4 py-2 bg-zinc-800 text-xs text-zinc-300 rounded-xl">Cancel</button>
+              <button type="submit" class="px-6 py-2 bg-amber-500 text-black font-bold text-xs rounded-xl shadow">Save Changes</button>
             </div>
           </form>
         </div>
@@ -1362,18 +1650,17 @@
       };
 
       return (
-        <form onSubmit={handleSubmit} class="max-w-2xl mx-auto bg-white border border-slate-200 rounded-3xl p-6 space-y-4 shadow-xs">
-          <div class="flex justify-between border-b pb-3">
-            <h3 class="font-heading font-bold text-lg text-slate-900">DIY Website Customizer</h3>
-            {savedToast && <span class="text-xs bg-emerald-100 text-emerald-800 font-bold px-3 py-1 rounded-full">Saved ✓</span>}
+        <form onSubmit={handleSubmit} class="max-w-2xl mx-auto bg-zinc-900 border border-zinc-800 rounded-3xl p-6 space-y-4">
+          <div class="flex justify-between border-b border-zinc-800 pb-3">
+            <h3 class="font-heading font-bold text-xl text-white">DIY Website Customizer</h3>
+            {savedToast && <span class="text-xs bg-emerald-950 text-emerald-400 px-3 py-1 rounded-full">Saved ✓</span>}
           </div>
           <div class="space-y-3 text-xs">
-            <div><label class="text-slate-600 font-semibold">Store Header Title</label><input type="text" value={formData.storeName} onChange={e=>setFormData({...formData, storeName:e.target.value})} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-bold" /></div>
-            <div><label class="text-slate-600 font-semibold">Announcement Bar Text</label><input type="text" value={formData.announcementBar} onChange={e=>setFormData({...formData, announcementBar:e.target.value})} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5" /></div>
-            <div><label class="text-slate-600 font-semibold">WhatsApp Phone Number</label><input type="text" value={formData.whatsappPhone} onChange={e=>setFormData({...formData, whatsappPhone:e.target.value})} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-mono" /></div>
-            <div><label class="text-slate-600 font-semibold">YouTube Avatar Image URL</label><input type="text" value={formData.youtubeAvatar} onChange={e=>setFormData({...formData, youtubeAvatar:e.target.value})} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-mono" /></div>
+            <div><label class="text-zinc-400">Store Header Title</label><input type="text" value={formData.storeName} onChange={e=>setFormData({...formData, storeName:e.target.value})} class="w-full bg-zinc-950 p-2.5 text-white border border-zinc-800 rounded-xl font-bold" /></div>
+            <div><label class="text-zinc-400">Announcement Bar Text</label><input type="text" value={formData.announcementBar} onChange={e=>setFormData({...formData, announcementBar:e.target.value})} class="w-full bg-zinc-950 p-2.5 text-white border border-zinc-800 rounded-xl" /></div>
+            <div><label class="text-zinc-400">WhatsApp Phone Number</label><input type="text" value={formData.whatsappPhone} onChange={e=>setFormData({...formData, whatsappPhone:e.target.value})} class="w-full bg-zinc-950 p-2.5 text-white border border-zinc-800 rounded-xl font-mono" /></div>
           </div>
-          <button type="submit" class="w-full bg-slate-900 text-white font-bold py-3 rounded-xl text-xs">Save Store Customizations</button>
+          <button type="submit" class="w-full bg-amber-500 text-black font-bold py-3 rounded-xl text-xs">Save Store Customizations</button>
         </form>
       );
     }
@@ -1411,15 +1698,82 @@
       };
 
       return (
-        <div class="space-y-4 bg-white border border-slate-200 p-6 rounded-3xl">
-          <h3 class="font-heading font-bold text-lg text-slate-900">CSV File Importer & Smart Deduplication</h3>
+        <div class="space-y-4 bg-zinc-900 border border-zinc-800 p-6 rounded-3xl">
+          <h3 class="font-heading font-bold text-xl text-white">Google Sheet CSV Import & Smart Deduplication</h3>
           <input type="file" accept=".csv" onChange={(e)=>{ const f=e.target.files[0]; if(f){ const r=new FileReader(); r.onload=evt=>handleParseCsvText(evt.target.result); r.readAsText(f); }}} class="text-xs" />
           {parsedDiff && (
             <div class="space-y-2 pt-2">
-              <div class="text-xs font-bold text-emerald-700">Parsed {parsedDiff.newItems.length} new unique orders.</div>
-              <button onClick={() => { saveOrdersState([...parsedDiff.newItems, ...orders]); setParsedDiff(null); alert("Synced!"); }} class="bg-emerald-600 text-white font-bold px-4 py-2 rounded-xl text-xs">Confirm Sync</button>
+              <div class="text-xs font-bold text-emerald-400">Parsed {parsedDiff.newItems.length} new unique orders.</div>
+              <button onClick={() => { saveOrdersState([...parsedDiff.newItems, ...orders]); setParsedDiff(null); alert("Synced to OMS!"); }} class="bg-emerald-600 text-white font-bold px-4 py-2 rounded-xl text-xs">Confirm Sync</button>
             </div>
           )}
+        </div>
+      );
+    }
+
+    function OmsAnalyticsTab({ orders }) {
+      const videoStats = useMemo(() => {
+        const stats = {};
+        orders.forEach(o => {
+          const vid = o.videoAttribution || 'Other';
+          if (!stats[vid]) stats[vid] = { count: 0, revenue: 0 };
+          stats[vid].count += 1;
+          stats[vid].revenue += (o.amountPaid || 0);
+        });
+        return Object.entries(stats).map(([video, data]) => ({ video, ...data }));
+      }, [orders]);
+
+      return (
+        <div class="space-y-6">
+          <h3 class="font-heading font-bold text-xl text-white">YouTube Video Revenue Attribution</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {videoStats.map(stat => (
+              <div key={stat.video} class="bg-zinc-900 border border-zinc-800 p-5 rounded-2xl space-y-3">
+                <div class="flex items-center space-x-2 text-red-400 font-heading font-bold">
+                  <span>▶️</span><span>{stat.video}</span>
+                </div>
+                <div class="flex justify-between text-xs pt-2 border-t border-zinc-800">
+                  <span class="text-zinc-400">Orders:</span><span class="font-bold text-white">{stat.count}</span>
+                </div>
+                <div class="flex justify-between text-xs">
+                  <span class="text-zinc-400">Revenue:</span><span class="text-xl font-extrabold text-amber-400 font-heading">₹{stat.revenue.toLocaleString()}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    function OrderDetailModal({ order, onClose, onUpdateStatus }) {
+      return (
+        <div class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex justify-end">
+          <div class="bg-zinc-900 border-l border-zinc-800 max-w-md w-full h-full p-6 space-y-6 overflow-y-auto custom-scrollbar">
+            <div class="flex items-center justify-between border-b border-zinc-800 pb-4">
+              <div>
+                <span class="text-xs text-amber-400 font-bold font-heading">{order.id}</span>
+                <h3 class="font-heading font-bold text-xl text-white">{order.customer.name}</h3>
+              </div>
+              <button onClick={onClose} class="text-zinc-400 hover:text-white text-xl">✕</button>
+            </div>
+            <div class="space-y-4 text-xs">
+              <div class="bg-zinc-950 p-4 rounded-xl space-y-2 border border-zinc-800">
+                <div class="text-zinc-400 font-semibold uppercase">Customer Details</div>
+                <div class="text-white font-medium">📞 {order.customer.phone}</div>
+                <div class="text-zinc-300">📍 {order.customer.address}</div>
+              </div>
+              <div class="space-y-2 pt-2">
+                <label class="text-zinc-400 font-semibold uppercase">Update Lifecycle Status:</label>
+                <div class="grid grid-cols-2 gap-2">
+                  {['CONFIRMED', 'PROCESSING', 'READY_TO_DISPATCH', 'DISPATCHED', 'DELIVERED'].map(st => (
+                    <button key={st} onClick={() => onUpdateStatus(order.id, st)} class={`p-2 rounded-lg text-center font-bold text-[10px] border transition ${order.orderStatus === st ? 'bg-amber-500 text-black border-amber-400' : 'bg-zinc-800 text-zinc-300'}`}>
+                      {st.replace(/_/g, ' ')}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       );
     }
@@ -1427,19 +1781,19 @@
     function StockAdjustModal({ product, onClose, onAdjust }) {
       const [delta, setDelta] = useState(5);
       return (
-        <div class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div class="bg-white border border-slate-200 rounded-3xl max-w-sm w-full p-6 space-y-4 shadow-xl">
-            <h3 class="font-heading font-bold text-lg text-slate-900">Adjust Stock Level</h3>
+        <div class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div class="bg-zinc-900 border border-zinc-700 rounded-3xl max-w-sm w-full p-6 space-y-4 shadow-2xl">
+            <h3 class="font-heading font-bold text-lg text-white">Adjust Stock Level</h3>
             <div class="flex items-center space-x-3 justify-center py-2">
-              <button onClick={() => setDelta(d => d - 1)} class="w-10 h-10 bg-slate-100 font-bold text-lg rounded-xl text-slate-900">-</button>
-              <input type="number" value={delta} onChange={e => setDelta(Number(e.target.value))} class="w-20 bg-slate-50 border rounded-xl p-2.5 text-center font-bold text-slate-900" />
-              <button onClick={() => setDelta(d => d + 1)} class="w-10 h-10 bg-slate-100 font-bold text-lg rounded-xl text-slate-900">+</button>
+              <button onClick={() => setDelta(d => d - 1)} class="w-10 h-10 bg-zinc-800 text-amber-400 font-bold text-lg rounded-xl">-</button>
+              <input type="number" value={delta} onChange={e => setDelta(Number(e.target.value))} class="w-20 bg-zinc-950 p-2.5 text-center font-bold text-white border border-zinc-800 rounded-xl" />
+              <button onClick={() => setDelta(d => d + 1)} class="w-10 h-10 bg-zinc-800 text-amber-400 font-bold text-lg rounded-xl">+</button>
             </div>
             <div class="flex space-x-2">
-              <button onClick={() => onAdjust(product.id, -Math.abs(delta))} class="flex-1 bg-red-100 text-red-700 font-bold py-2 rounded-xl text-xs">- Remove {delta}</button>
-              <button onClick={() => onAdjust(product.id, Math.abs(delta))} class="flex-1 bg-emerald-100 text-emerald-800 font-bold py-2 rounded-xl text-xs">+ Add {delta}</button>
+              <button onClick={() => onAdjust(product.id, -Math.abs(delta))} class="flex-1 bg-red-950 text-red-400 font-bold py-2.5 rounded-xl text-xs border border-red-800">- Remove {delta}</button>
+              <button onClick={() => onAdjust(product.id, Math.abs(delta))} class="flex-1 bg-emerald-950 text-emerald-400 font-bold py-2.5 rounded-xl text-xs border border-emerald-800">+ Add {delta}</button>
             </div>
-            <button onClick={onClose} class="w-full text-xs text-slate-400 py-1 font-medium">Cancel</button>
+            <button onClick={onClose} class="w-full bg-zinc-800 text-zinc-400 py-2 rounded-xl text-xs font-medium">Cancel</button>
           </div>
         </div>
       );
