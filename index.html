@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Humjoly Tailors — Premium Storefront & Internal OMS</title>
+  <title>Humjoly Tailors — Premium E-Commerce Storefront & OMS</title>
   
   <!-- Google Fonts: Inter & Outfit -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -21,12 +21,14 @@
             heading: ['Outfit', 'sans-serif'],
           },
           colors: {
-            brand: {
-              50: '#FAF6F0',
-              100: '#F4ECE0',
-              500: '#AA7C4B',
-              600: '#8C6036',
-              accent: '#D4AF37'
+            myntra: {
+              pink: '#ff3f6c',
+              pinkHover: '#e6355d',
+              emerald: '#03a685',
+              emeraldHover: '#028c70',
+              bg: '#f5f5f6',
+              card: '#ffffff',
+              border: '#eaeaec'
             }
           }
         }
@@ -46,34 +48,26 @@
   <style>
     body {
       font-family: 'Inter', sans-serif;
-      background-color: #0f0f11;
-      color: #e4e4e7;
+      background-color: #f5f5f6;
+      color: #282c3f;
     }
     h1, h2, h3, h4, h5, h6, .font-heading {
       font-family: 'Outfit', sans-serif;
-    }
-    .gold-gradient {
-      background: linear-gradient(135deg, #F3E5AB 0%, #D4AF37 50%, #AA7C4B 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-    .gold-bg-gradient {
-      background: linear-gradient(135deg, #D4AF37 0%, #AA7C4B 100%);
     }
     .custom-scrollbar::-webkit-scrollbar {
       width: 6px;
       height: 6px;
     }
     .custom-scrollbar::-webkit-scrollbar-track {
-      background: #18181b;
+      background: #f5f5f6;
     }
     .custom-scrollbar::-webkit-scrollbar-thumb {
-      background: #3f3f46;
+      background: #d4d5d9;
       border-radius: 4px;
     }
   </style>
 </head>
-<body class="custom-scrollbar selection:bg-amber-500 selection:text-black min-h-screen">
+<body class="custom-scrollbar selection:bg-pink-500 selection:text-white min-h-screen">
   <div id="root"></div>
 
   <script type="text/babel">
@@ -89,13 +83,11 @@
       appId: "1:190537577726:web:949c3d3dfa6be7237421af"
     };
 
-    let firebaseDb = null;
     try {
       if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-      firebaseDb = firebase.firestore();
     } catch(e) {}
 
-    // --- PRESET FABRIC PHOTOS FOR CRUD IMAGE PICKER ---
+    // --- PRESET FABRIC PHOTOS ---
     const PRESET_FABRIC_IMAGES = [
       { name: 'Giza Navy Checks', url: 'https://images.unsplash.com/photo-1598033129183-c4f50c736f10?w=600&auto=format&fit=crop&q=80' },
       { name: 'Maroon Giza Checks', url: 'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=600&auto=format&fit=crop&q=80' },
@@ -242,44 +234,41 @@
         paymentStatus: 'PAID',
         orderStatus: 'DISPATCHED',
         source: 'YouTube Storefront'
-      },
-      {
-        id: 'HT-1003',
-        ie: 3,
-        date: '29/07/2026',
-        customer: { name: 'Prasad Tangirala', phone: '9849662763', address: 'H.No- 1-8-706/28, Padma Colony, Nalgonda' },
-        videoAttribution: 'Video no 13',
-        fabricDescription: 'Soktas shirt checks',
-        quantity: '3 pc',
-        totalAmount: 2400,
-        amountPaid: 2400,
-        balanceAmount: 0,
-        paymentStatus: 'PAID',
-        orderStatus: 'READY_TO_DISPATCH',
-        source: 'YouTube Storefront'
       }
     ];
 
     const DEFAULT_STORE_SETTINGS = {
       storeName: 'HUMJOLY TAILORS',
-      tagline: 'Bespoke Fabrics & Suiting Since 1974',
-      announcementBar: '✨ Free Shipping across India on orders above ₹1500! Direct YouTube Collection Hub',
+      tagline: 'SUITING & SHIRTING FABRICS RAYMOND SIYARAM SOKTAS',
+      announcementBar: '✨ Free Shipping across India on orders above ₹1500! Explore YouTube Collections',
       whatsappPhone: '919440975560',
-      heroTitle: 'Humjoly Tailors Premium Fabric Collection',
-      heroSubtitle: 'Explore suiting & shirting fabrics featured on our YouTube channel (@HumjolyTailors1974) or browse our complete standalone catalog below.',
+      heroTitle: 'HUMJOLY TAILORS FABRIC STORE',
+      heroSubtitle: 'Bespoke Suiting & Shirting Fabrics Since 1974. Explore fabrics featured on our YouTube channel (@HumjolyTailors1974) or order direct on WhatsApp.',
       adminPin: '1974',
       youtubeAvatar: 'https://yt3.googleusercontent.com/ytc/AIdro_k4qY6p9uX7F4d6T_N4e3_m8v8X=s176-c-k-c0x00ffffff-no-rj'
     };
 
+    const INITIAL_ADMIN_USERS = [
+      { id: 'admin-1', email: 'humjolytailors1974@gmail.com', password: 'admin1974', role: 'Master Admin', name: 'Humjoly Store Owner' },
+      { id: 'admin-2', email: 'tailor.staff@humjoly.com', password: 'staff123', role: 'Staff Admin', name: 'Tailor Shop Manager' }
+    ];
+
     const INITIAL_BRANDS = ['Soktas', 'Raymond', 'Siyaram', 'Solino', 'D&J', 'Birla Century', 'Linen Club', 'Generic'];
     const INITIAL_CATEGORIES = ['Shirting', 'Pure Cotton', 'Pure Linen', 'Trouser', 'Pant Shirt Combo', 'Cotton Linen', 'Suit Piece'];
 
-    // --- MAIN APPLICATION COMPONENT ---
+    // --- MAIN APP COMPONENT ---
     function App() {
       const [viewMode, setViewMode] = useState('store');
       const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
-      const [showAdminPinModal, setShowAdminPinModal] = useState(false);
+      const [showAdminLoginModal, setShowAdminLoginModal] = useState(false);
+      
+      // Dual Auth State
+      const [authModeTab, setAuthModeTab] = useState('pin'); // 'pin' or 'email'
       const [pinInput, setPinInput] = useState('');
+      const [emailInput, setEmailInput] = useState('humjolytailors1974@gmail.com');
+      const [passwordInput, setPasswordInput] = useState('admin1974');
+      const [adminUsers, setAdminUsers] = useState(INITIAL_ADMIN_USERS);
+      const [currentLoggedInUser, setCurrentLoggedInUser] = useState(null);
 
       const [products, setProducts] = useState(INITIAL_PRODUCTS);
       const [orders, setOrders] = useState(INITIAL_ORDERS);
@@ -291,6 +280,7 @@
       const [cart, setCart] = useState([]);
       const [showCartDrawer, setShowCartDrawer] = useState(false);
 
+      const [catalogViewFilterMode, setCatalogViewFilterMode] = useState('ALL'); // 'ALL' or 'VIDEO'
       const [selectedVideo, setSelectedVideo] = useState('ALL');
       const [selectedCategory, setSelectedCategory] = useState('ALL');
       const [selectedBrand, setSelectedBrand] = useState('ALL');
@@ -310,6 +300,7 @@
         const savedSettings = localStorage.getItem('ht_settings');
         const savedBrands = localStorage.getItem('ht_brands');
         const savedCats = localStorage.getItem('ht_categories');
+        const savedUsers = localStorage.getItem('ht_admin_users');
         const savedCart = localStorage.getItem('ht_cart');
 
         if (savedProds) setProducts(JSON.parse(savedProds));
@@ -317,6 +308,7 @@
         if (savedSettings) setStoreSettings(JSON.parse(savedSettings));
         if (savedBrands) setBrandsList(JSON.parse(savedBrands));
         if (savedCats) setCategoriesList(JSON.parse(savedCats));
+        if (savedUsers) setAdminUsers(JSON.parse(savedUsers));
         if (savedCart) setCart(JSON.parse(savedCart));
       }, []);
 
@@ -333,6 +325,11 @@
       const saveSettingsState = (newSettings) => {
         setStoreSettings(newSettings);
         localStorage.setItem('ht_settings', JSON.stringify(newSettings));
+      };
+
+      const saveAdminUsersState = (newUsers) => {
+        setAdminUsers(newUsers);
+        localStorage.setItem('ht_admin_users', JSON.stringify(newUsers));
       };
 
       const addDynamicBrand = (newBrand) => {
@@ -374,28 +371,42 @@
 
       const handleSwitchMode = (mode) => {
         if (mode === 'oms' && !isAdminAuthenticated) {
-          setShowAdminPinModal(true);
+          setShowAdminLoginModal(true);
         } else {
           setViewMode(mode);
         }
       };
 
-      const handleVerifyPin = (e) => {
+      // DUAL AUTHENTICATION: PIN OR EMAIL/PASSWORD
+      const handleVerifyAuth = (e) => {
         e.preventDefault();
-        if (pinInput === storeSettings.adminPin) {
-          setIsAdminAuthenticated(true);
-          setShowAdminPinModal(false);
-          setPinInput('');
-          setViewMode('oms');
+        if (authModeTab === 'pin') {
+          if (pinInput === storeSettings.adminPin) {
+            setIsAdminAuthenticated(true);
+            setCurrentLoggedInUser({ name: 'Owner (PIN)', role: 'Master Admin' });
+            setShowAdminLoginModal(false);
+            setPinInput('');
+            setViewMode('oms');
+          } else {
+            alert("Invalid Security PIN! Default PIN is: 1974");
+          }
         } else {
-          alert("Invalid Security PIN! Try default: 1974");
+          const matched = adminUsers.find(u => u.email.toLowerCase() === emailInput.toLowerCase() && u.password === passwordInput);
+          if (matched) {
+            setIsAdminAuthenticated(true);
+            setCurrentLoggedInUser(matched);
+            setShowAdminLoginModal(false);
+            setViewMode('oms');
+          } else {
+            alert("Invalid Admin Email or Password!");
+          }
         }
       };
 
       const filteredProducts = useMemo(() => {
         return products.filter(p => {
           if (!p.isActive) return false;
-          if (selectedVideo !== 'ALL' && !p.featuredInVideos.includes(selectedVideo)) return false;
+          if (catalogViewFilterMode === 'VIDEO' && selectedVideo !== 'ALL' && !p.featuredInVideos.includes(selectedVideo)) return false;
           if (selectedCategory !== 'ALL' && p.category !== selectedCategory) return false;
           if (selectedBrand !== 'ALL' && p.brand !== selectedBrand) return false;
           if (searchQuery) {
@@ -409,7 +420,7 @@
           }
           return true;
         });
-      }, [products, selectedVideo, selectedCategory, selectedBrand, searchQuery]);
+      }, [products, catalogViewFilterMode, selectedVideo, selectedCategory, selectedBrand, searchQuery]);
 
       const totalRevenue = useMemo(() => orders.reduce((sum, o) => sum + (o.amountPaid || 0), 0), [orders]);
       const pendingPayment = useMemo(() => orders.reduce((sum, o) => sum + (o.balanceAmount || 0), 0), [orders]);
@@ -417,49 +428,50 @@
       const lowStockCount = useMemo(() => products.filter(p => p.currentStock <= p.lowStockThreshold).length, [products]);
 
       return (
-        <div class="min-h-screen flex flex-col bg-[#0f0f11] text-zinc-100">
+        <div class="min-h-screen flex flex-col bg-myntra-bg text-slate-800">
           
-          {/* ANNOUNCEMENT BAR */}
+          {/* MYNTRA STYLE ANNOUNCEMENT BANNER */}
           {storeSettings.announcementBar && (
-            <div class="bg-gradient-to-r from-amber-600 via-amber-500 to-amber-700 text-black text-center text-xs font-bold py-1.5 px-4 tracking-wide shadow-inner">
+            <div class="bg-myntra-pink text-white text-center text-xs font-semibold py-2 px-4 shadow-sm">
               {storeSettings.announcementBar}
             </div>
           )}
 
-          {/* LUXURY TOP HEADER BAR */}
-          <header class="sticky top-0 z-40 bg-zinc-900/90 backdrop-blur-md border-b border-zinc-800 px-4 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-4">
+          {/* MYNTRA STYLE CLEAN E-COMMERCE HEADER */}
+          <header class="sticky top-0 z-40 bg-white border-b border-myntra-border px-4 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-4 shadow-xs">
             <div class="flex items-center space-x-3 cursor-pointer" onClick={() => setViewMode('store')}>
-              <div class="w-10 h-10 rounded-xl gold-bg-gradient flex items-center justify-center font-heading font-extrabold text-black text-xl shadow-lg shadow-amber-500/20 overflow-hidden">
+              <div class="w-10 h-10 rounded-xl overflow-hidden border border-slate-200 shadow-xs flex items-center justify-center bg-slate-100">
                 <img src={storeSettings.youtubeAvatar} alt="Logo" class="w-full h-full object-cover" onError={(e)=>{e.target.style.display='none';}} />
-                <span class="font-heading font-extrabold text-black">HT</span>
+                <span class="font-heading font-extrabold text-myntra-pink text-sm">HT</span>
               </div>
               <div>
-                <h1 class="font-heading font-bold text-lg leading-tight tracking-wide text-white">
-                  {storeSettings.storeName}
-                </h1>
-                <p class="text-xs text-amber-400/90 font-medium">{storeSettings.tagline}</p>
+                <div class="flex items-center space-x-1.5">
+                  <h1 class="font-heading font-extrabold text-lg text-slate-900 leading-tight tracking-tight">
+                    {storeSettings.storeName}
+                  </h1>
+                  <span class="text-xs text-blue-600">✓</span>
+                </div>
+                <p class="text-[10px] text-slate-500 font-semibold tracking-wider uppercase">{storeSettings.tagline}</p>
               </div>
             </div>
 
             {/* DUAL ROLE SWITCHER */}
-            <div class="flex items-center bg-zinc-800/80 p-1.5 rounded-xl border border-zinc-700/60 shadow-inner">
+            <div class="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
               <button 
                 onClick={() => handleSwitchMode('store')}
-                class={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium text-xs sm:text-sm transition-all duration-200 ${
-                  viewMode === 'store' ? 'bg-amber-500 text-black shadow-md font-semibold' : 'text-zinc-400 hover:text-zinc-200'
+                class={`px-4 py-2 rounded-lg font-bold text-xs transition ${
+                  viewMode === 'store' ? 'bg-myntra-pink text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
-                <span>🛍️</span>
-                <span>Customer Storefront</span>
+                🛍️ Storefront
               </button>
               <button 
                 onClick={() => handleSwitchMode('oms')}
-                class={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium text-xs sm:text-sm transition-all duration-200 ${
-                  viewMode === 'oms' ? 'bg-amber-500 text-black shadow-md font-semibold' : 'text-zinc-400 hover:text-zinc-200'
+                class={`px-4 py-2 rounded-lg font-bold text-xs transition ${
+                  viewMode === 'oms' ? 'bg-slate-900 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
-                <span>💼</span>
-                <span>Internal OMS {isAdminAuthenticated ? '✓' : '🔒'}</span>
+                💼 OMS (Admin) {isAdminAuthenticated ? '✓' : '🔒'}
               </button>
             </div>
 
@@ -467,11 +479,11 @@
               {viewMode === 'store' && (
                 <button 
                   onClick={() => setShowCartDrawer(true)}
-                  class="relative bg-zinc-800 hover:bg-zinc-700 text-white px-4 py-2 rounded-xl text-xs font-bold border border-zinc-700 transition flex items-center space-x-2 shadow"
+                  class="relative bg-myntra-pink hover:bg-myntra-pinkHover text-white px-4 py-2 rounded-xl text-xs font-bold transition flex items-center space-x-2 shadow-xs"
                 >
-                  <span>🛒 Cart</span>
+                  <span>🛒 Bag / Cart</span>
                   {cart.length > 0 && (
-                    <span class="bg-amber-500 text-black text-[10px] font-extrabold w-5 h-5 rounded-full flex items-center justify-center">
+                    <span class="bg-white text-myntra-pink text-[10px] font-extrabold px-1.5 py-0.5 rounded-full shadow-xs">
                       {cart.reduce((s,i)=>s+i.qty,0)}
                     </span>
                   )}
@@ -482,15 +494,15 @@
                 href={`https://wa.me/${storeSettings.whatsappPhone}?text=Hi%20Humjoly%20Tailors%2C%20I%20want%20to%20enquire%20about%20fabric%20collections`}
                 target="_blank"
                 rel="noreferrer"
-                class="hidden md:flex items-center space-x-2 bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600/30 px-3.5 py-1.5 rounded-lg border border-emerald-500/30 text-xs font-semibold transition"
+                class="hidden md:flex items-center space-x-2 bg-emerald-50 text-myntra-emerald hover:bg-emerald-100 px-3.5 py-2 rounded-xl border border-emerald-200 text-xs font-bold transition"
               >
-                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span class="w-2 h-2 rounded-full bg-myntra-emerald animate-pulse"></span>
                 <span>WhatsApp Line</span>
               </a>
             </div>
           </header>
 
-          {/* MAIN VIEW */}
+          {/* MAIN BODY VIEW */}
           {viewMode === 'store' ? (
             <StorefrontView 
               products={filteredProducts}
@@ -498,6 +510,8 @@
               storeSettings={storeSettings}
               brandsList={brandsList}
               categoriesList={categoriesList}
+              catalogViewFilterMode={catalogViewFilterMode}
+              setCatalogViewFilterMode={setCatalogViewFilterMode}
               selectedVideo={selectedVideo}
               setSelectedVideo={setSelectedVideo}
               selectedCategory={selectedCategory}
@@ -527,6 +541,9 @@
               categoriesList={categoriesList}
               addDynamicBrand={addDynamicBrand}
               addDynamicCategory={addDynamicCategory}
+              adminUsers={adminUsers}
+              saveAdminUsersState={saveAdminUsersState}
+              currentLoggedInUser={currentLoggedInUser}
               totalRevenue={totalRevenue}
               pendingPayment={pendingPayment}
               readyToDispatchCount={readyToDispatchCount}
@@ -537,32 +554,55 @@
             />
           )}
 
-          {/* ADMIN PIN SECURITY MODAL */}
-          {showAdminPinModal && (
-            <div class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-              <form onSubmit={handleVerifyPin} class="bg-zinc-900 border border-zinc-700 rounded-3xl max-w-sm w-full p-6 space-y-5 shadow-2xl">
-                <div class="text-center space-y-2">
-                  <div class="w-12 h-12 rounded-2xl gold-bg-gradient mx-auto flex items-center justify-center text-black text-2xl font-bold">🔒</div>
-                  <h3 class="font-heading font-bold text-xl text-white">Owner Security Authentication</h3>
-                  <p class="text-xs text-zinc-400">Enter Security PIN to access Internal OMS & Catalog Controls</p>
+          {/* DUAL ADMIN LOGIN MODAL (PIN OR EMAIL/PASSWORD) */}
+          {showAdminLoginModal && (
+            <div class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+              <form onSubmit={handleVerifyAuth} class="bg-white border border-slate-200 rounded-3xl max-w-sm w-full p-6 space-y-4 shadow-xl">
+                <div class="text-center space-y-1">
+                  <div class="w-12 h-12 rounded-2xl bg-pink-100 mx-auto flex items-center justify-center text-myntra-pink text-2xl font-bold">🔒</div>
+                  <h3 class="font-heading font-extrabold text-lg text-slate-900">Admin Authentication</h3>
+                  <p class="text-xs text-slate-500">Owner Security PIN or Email Login</p>
                 </div>
-                <input 
-                  type="password"
-                  placeholder="Security PIN (Default: 1974)"
-                  value={pinInput}
-                  onChange={(e) => setPinInput(e.target.value)}
-                  class="w-full bg-zinc-950 border border-zinc-700 rounded-xl p-3 text-center text-lg tracking-widest text-amber-400 font-bold focus:outline-none focus:border-amber-500"
-                  autoFocus
-                />
-                <button type="submit" class="w-full bg-amber-500 hover:bg-amber-400 text-black font-bold py-3 rounded-xl text-xs transition shadow">
-                  Unlock Admin Access
+
+                {/* TAB SWITCHER: PIN vs EMAIL */}
+                <div class="flex bg-slate-100 p-1 rounded-xl text-xs font-bold">
+                  <button type="button" onClick={() => setAuthModeTab('pin')} class={`flex-1 py-1.5 rounded-lg ${authModeTab === 'pin' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500'}`}>🔑 PIN Access</button>
+                  <button type="button" onClick={() => setAuthModeTab('email')} class={`flex-1 py-1.5 rounded-lg ${authModeTab === 'email' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500'}`}>📧 Email Login</button>
+                </div>
+
+                {authModeTab === 'pin' ? (
+                  <div class="space-y-2">
+                    <input 
+                      type="password" 
+                      placeholder="Security PIN (Default: 1974)" 
+                      value={pinInput} 
+                      onChange={e => setPinInput(e.target.value)} 
+                      class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-center text-lg font-bold tracking-widest text-slate-900 focus:outline-none focus:border-myntra-pink" 
+                      autoFocus 
+                    />
+                  </div>
+                ) : (
+                  <div class="space-y-2 text-xs">
+                    <div>
+                      <label class="text-slate-600 font-semibold">Admin Email</label>
+                      <input type="email" required value={emailInput} onChange={e=>setEmailInput(e.target.value)} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-bold text-slate-900" />
+                    </div>
+                    <div>
+                      <label class="text-slate-600 font-semibold">Password</label>
+                      <input type="password" required value={passwordInput} onChange={e=>setPasswordInput(e.target.value)} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-bold text-slate-900" />
+                    </div>
+                  </div>
+                )}
+
+                <button type="submit" class="w-full bg-myntra-pink hover:bg-myntra-pinkHover text-white font-bold py-3 rounded-xl text-xs shadow-xs">
+                  Unlock OMS Admin Controls
                 </button>
-                <button type="button" onClick={() => setShowAdminPinModal(false)} class="w-full bg-zinc-800 text-zinc-400 py-2 rounded-xl text-xs font-medium">Cancel</button>
+                <button type="button" onClick={() => setShowAdminLoginModal(false)} class="w-full text-xs text-slate-500 font-medium">Cancel</button>
               </form>
             </div>
           )}
 
-          {/* PRODUCT DETAIL PAGE (PDP MODAL) */}
+          {/* PRODUCT DETAIL PAGE MODAL */}
           {selectedPdpProduct && (
             <ProductDetailPageModal 
               product={selectedPdpProduct}
@@ -594,20 +634,7 @@
             />
           )}
 
-          {/* ORDER DETAIL DRAWER */}
-          {selectedOrderForDrawer && (
-            <OrderDetailModal 
-              order={selectedOrderForDrawer}
-              onClose={() => setSelectedOrderForDrawer(null)}
-              onUpdateStatus={(orderId, newStatus) => {
-                const updated = orders.map(o => o.id === orderId ? { ...o, orderStatus: newStatus } : o);
-                saveOrdersState(updated);
-                setSelectedOrderForDrawer(prev => ({ ...prev, orderStatus: newStatus }));
-              }}
-            />
-          )}
-
-          {/* EDIT PRODUCT ROW MODAL (MULTI-IMAGE THUMBNAIL MANAGER) */}
+          {/* EDIT PRODUCT ROW MODAL */}
           {editingProductRow && (
             <EditProductModal 
               product={editingProductRow}
@@ -624,7 +651,7 @@
             />
           )}
 
-          {/* STOCK ADJUSTMENT MODAL */}
+          {/* STOCK ADJUST MODAL */}
           {stockAdjustProduct && (
             <StockAdjustModal 
               product={stockAdjustProduct}
@@ -642,7 +669,7 @@
     }
 
     // ==========================================
-    // STOREFRONT VIEW
+    // MYNTRA-INSPIRED STOREFRONT VIEW
     // ==========================================
     function StorefrontView({ 
       products, 
@@ -650,6 +677,8 @@
       storeSettings,
       brandsList,
       categoriesList,
+      catalogViewFilterMode,
+      setCatalogViewFilterMode,
       selectedVideo, 
       setSelectedVideo,
       selectedCategory, 
@@ -662,108 +691,85 @@
       onAddToCart,
       onQuickWhatsapp 
     }) {
-      const videoOptions = ['ALL', 'Video no 18', 'Video no 13', 'Video no 14', 'Video no 15', 'Video no 16', 'Video no 17', 'Video no 11', 'Video no 8'];
-
-      const videoTimelineItems = useMemo(() => {
-        if (selectedVideo === 'ALL') return [];
-        return allProducts.filter(p => p.isActive && p.featuredInVideos.includes(selectedVideo));
-      }, [allProducts, selectedVideo]);
+      const videoOptions = ['Video no 18', 'Video no 13', 'Video no 14', 'Video no 15', 'Video no 16', 'Video no 17', 'Video no 11'];
 
       return (
-        <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
+        <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
           
           {/* HERO BANNER */}
-          <div class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-zinc-900 via-amber-950/40 to-zinc-900 border border-amber-500/20 p-6 sm:p-10 shadow-2xl">
-            <div class="relative z-10 max-w-3xl space-y-4">
-              <div class="inline-flex items-center space-x-2 bg-amber-500/10 border border-amber-500/30 px-3 py-1 rounded-full text-amber-400 text-xs font-semibold uppercase">
+          <div class="relative overflow-hidden rounded-3xl bg-white border border-myntra-border p-6 sm:p-8 shadow-xs flex flex-col md:flex-row items-center justify-between gap-6">
+            <div class="space-y-3 max-w-2xl">
+              <div class="inline-flex items-center space-x-2 bg-pink-50 border border-pink-200 px-3 py-1 rounded-full text-myntra-pink text-xs font-bold uppercase">
                 <span>🎥 YouTube Collection Hub + Standalone Catalog</span>
               </div>
-              <h2 class="text-3xl sm:text-5xl font-heading font-extrabold text-white leading-tight">
+              <h2 class="text-2xl sm:text-4xl font-heading font-extrabold text-slate-900 leading-tight">
                 {storeSettings.heroTitle}
               </h2>
-              <p class="text-zinc-300 text-sm sm:text-base leading-relaxed">
+              <p class="text-slate-600 text-xs sm:text-sm leading-relaxed">
                 {storeSettings.heroSubtitle}
               </p>
-              <div class="pt-2 flex flex-wrap gap-3">
-                <button 
-                  onClick={() => setSelectedVideo('Video no 18')}
-                  class="bg-amber-500 hover:bg-amber-400 text-black px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition shadow-lg shadow-amber-500/20"
-                >
-                  <span>📺 Video #18 Collection</span>
-                </button>
-                <button 
-                  onClick={() => { setSelectedVideo('ALL'); setSelectedCategory('ALL'); setSelectedBrand('ALL'); setSearchQuery(''); }}
-                  class="bg-zinc-800 hover:bg-zinc-700 text-zinc-200 px-4 py-2.5 rounded-xl font-medium text-xs sm:text-sm border border-zinc-700 transition"
-                >
-                  Browse Full Catalog ({allProducts.filter(p=>p.isActive).length} Fabrics)
-                </button>
-              </div>
+            </div>
+
+            <div class="w-28 h-28 rounded-2xl overflow-hidden border border-slate-200 shadow-xs shrink-0 bg-slate-100">
+              <img src={storeSettings.youtubeAvatar} alt="Avatar" class="w-full h-full object-cover" />
             </div>
           </div>
 
-          {/* MULTI-ITEM VIDEO SHOWCASE TIMELINE */}
-          {selectedVideo !== 'ALL' && (
-            <div class="bg-zinc-900 border border-amber-500/40 rounded-3xl p-6 space-y-5">
-              <div class="flex flex-wrap items-center justify-between gap-4 border-b border-zinc-800 pb-4">
-                <div class="flex items-center space-x-3">
-                  <div class="w-12 h-12 rounded-2xl bg-red-600/20 text-red-500 border border-red-500/30 flex items-center justify-center text-2xl font-bold">
-                    ▶️
-                  </div>
-                  <div>
-                    <h3 class="font-heading font-bold text-white text-lg">
-                      Multi-Item Video Showcase — "{selectedVideo}"
-                    </h3>
-                    <p class="text-xs text-zinc-400">
-                      Showing fabric pieces featured in this video with sequence badges (#1, #2, #3...).
-                    </p>
-                  </div>
-                </div>
-
-                <button onClick={() => setSelectedVideo('ALL')} class="text-xs text-amber-400 hover:text-amber-300 font-semibold underline">
-                  ✕ Exit Video View & Show All Stock
+          {/* DEDICATED CATALOG SELECTION: VIDEO vs STANDALONE CATALOG */}
+          <div class="bg-white border border-myntra-border rounded-2xl p-4 space-y-4 shadow-xs">
+            <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
+              <span class="text-xs font-extrabold text-slate-900 uppercase">Catalogue Browsing Mode:</span>
+              <div class="flex bg-slate-100 p-1 rounded-xl text-xs font-bold">
+                <button 
+                  onClick={() => { setCatalogViewFilterMode('ALL'); setSelectedVideo('ALL'); }}
+                  class={`px-4 py-1.5 rounded-lg transition ${catalogViewFilterMode === 'ALL' ? 'bg-myntra-pink text-white shadow-xs' : 'text-slate-600'}`}
+                >
+                  🌐 Full Standalone Catalog ({allProducts.filter(p=>p.isActive).length})
+                </button>
+                <button 
+                  onClick={() => { setCatalogViewFilterMode('VIDEO'); setSelectedVideo('Video no 18'); }}
+                  class={`px-4 py-1.5 rounded-lg transition ${catalogViewFilterMode === 'VIDEO' ? 'bg-myntra-pink text-white shadow-xs' : 'text-slate-600'}`}
+                >
+                  🎥 Filter by YouTube Video
                 </button>
               </div>
+            </div>
 
-              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {videoTimelineItems.map(item => (
-                  <div key={item.id} class="bg-zinc-950 border border-zinc-800 rounded-2xl p-4 flex space-x-3 items-center justify-between">
-                    <img src={item.imageUrl} class="w-16 h-16 rounded-xl object-cover" />
-                    <div class="flex-1 min-w-0">
-                      <span class="bg-red-950 text-red-400 border border-red-800 text-[10px] font-bold px-2 py-0.5 rounded">
-                        {item.sequenceInVideo || 'Featured Item'}
-                      </span>
-                      <h4 class="font-heading font-bold text-xs text-white truncate mt-1">{item.name}</h4>
-                      <div class="text-sm font-extrabold text-amber-400 font-heading">₹{item.sellingPrice} / {item.unit}</div>
-                    </div>
-                    <button onClick={() => onAddToCart(item)} class="bg-amber-500 hover:bg-amber-400 text-black font-bold p-2 rounded-xl text-xs shrink-0">
-                      + Cart
-                    </button>
-                  </div>
+            {/* IF VIDEO MODE IS ACTIVE */}
+            {catalogViewFilterMode === 'VIDEO' && (
+              <div class="flex items-center space-x-2 overflow-x-auto pb-1 custom-scrollbar">
+                <span class="text-xs font-bold text-red-600 shrink-0 mr-1">Select Video:</span>
+                {videoOptions.map(vid => (
+                  <button
+                    key={vid}
+                    onClick={() => setSelectedVideo(vid)}
+                    class={`px-3 py-1.5 rounded-full text-xs font-bold shrink-0 transition ${selectedVideo === vid ? 'bg-red-600 text-white' : 'bg-red-50 text-red-700 border border-red-200'}`}
+                  >
+                    ▶ {vid}
+                  </button>
                 ))}
               </div>
-            </div>
-          )}
+            )}
 
-          {/* SEARCH & FILTER BAR */}
-          <div class="bg-zinc-900/80 border border-zinc-800 rounded-2xl p-4 space-y-4">
+            {/* SEARCH */}
             <div class="relative">
               <input 
                 type="text"
-                placeholder="Search fabric name, brand, SKU..."
+                placeholder="Search suiting & shirting fabrics (e.g. Soktas, Raymond, Linen)..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 pl-11 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500"
+                class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 pl-10 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-myntra-pink"
               />
-              <span class="absolute left-4 top-3.5 text-zinc-500">🔍</span>
+              <span class="absolute left-3.5 top-3 text-slate-400 text-xs">🔍</span>
             </div>
 
-            <div class="flex flex-col space-y-3">
-              {/* Dynamic Categories */}
+            {/* CATEGORIES & BRANDS FILTERS */}
+            <div class="space-y-2">
               <div class="flex items-center space-x-2 overflow-x-auto pb-1 custom-scrollbar">
-                <span class="text-xs font-semibold text-zinc-400 uppercase shrink-0 mr-2">Category:</span>
+                <span class="text-[11px] font-bold text-slate-400 uppercase shrink-0 mr-1">Category:</span>
                 <button 
-                  onClick={() => setSelectedCategory('ALL')}
-                  class={`px-3 py-1.5 rounded-lg text-xs font-medium shrink-0 transition ${selectedCategory === 'ALL' ? 'bg-amber-500 text-black font-semibold' : 'bg-zinc-800/80 text-zinc-400'}`}
+                  onClick={() => setSelectedCategory('ALL')} 
+                  class={`px-3 py-1 rounded-full text-xs font-semibold shrink-0 transition ${selectedCategory === 'ALL' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
                 >
                   All
                 </button>
@@ -771,19 +777,18 @@
                   <button
                     key={cat}
                     onClick={() => setSelectedCategory(cat)}
-                    class={`px-3 py-1.5 rounded-lg text-xs font-medium shrink-0 transition ${selectedCategory === cat ? 'bg-amber-500 text-black font-semibold' : 'bg-zinc-800/80 text-zinc-400'}`}
+                    class={`px-3 py-1 rounded-full text-xs font-semibold shrink-0 transition ${selectedCategory === cat ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
                   >
                     {cat}
                   </button>
                 ))}
               </div>
 
-              {/* Dynamic Brands */}
               <div class="flex items-center space-x-2 overflow-x-auto pb-1 custom-scrollbar">
-                <span class="text-xs font-semibold text-zinc-400 uppercase shrink-0 mr-2">Brand:</span>
+                <span class="text-[11px] font-bold text-slate-400 uppercase shrink-0 mr-1">Brand:</span>
                 <button 
-                  onClick={() => setSelectedBrand('ALL')}
-                  class={`px-3 py-1.5 rounded-lg text-xs font-medium shrink-0 transition ${selectedBrand === 'ALL' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 font-semibold' : 'bg-zinc-800/50 text-zinc-400'}`}
+                  onClick={() => setSelectedBrand('ALL')} 
+                  class={`px-3 py-1 rounded-full text-xs font-semibold shrink-0 transition ${selectedBrand === 'ALL' ? 'bg-amber-500 text-black font-bold' : 'bg-slate-100 text-slate-600'}`}
                 >
                   All Brands
                 </button>
@@ -791,7 +796,7 @@
                   <button
                     key={brand}
                     onClick={() => setSelectedBrand(brand)}
-                    class={`px-3 py-1.5 rounded-lg text-xs font-medium shrink-0 transition ${selectedBrand === brand ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 font-semibold' : 'bg-zinc-800/50 text-zinc-400'}`}
+                    class={`px-3 py-1 rounded-full text-xs font-semibold shrink-0 transition ${selectedBrand === brand ? 'bg-amber-500 text-black font-bold' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
                   >
                     {brand}
                   </button>
@@ -800,24 +805,22 @@
             </div>
           </div>
 
-          {/* STOREFRONT PRODUCT CARDS */}
+          {/* PRODUCT GRID */}
           <div class="space-y-4">
-            <h3 class="font-heading font-bold text-xl text-white">
-              Available Stock Catalog <span class="text-sm font-normal text-zinc-400">({products.length} items)</span>
+            <h3 class="font-heading font-extrabold text-lg text-slate-900">
+              Available Fabric Catalog ({products.length})
             </h3>
 
             {products.length === 0 ? (
-              <div class="bg-zinc-900/40 border border-zinc-800 rounded-2xl p-12 text-center space-y-3">
-                <div class="text-4xl">🔍</div>
-                <h4 class="font-heading font-semibold text-lg text-zinc-300">No Fabrics Matched</h4>
-                <button onClick={() => { setSelectedVideo('ALL'); setSelectedCategory('ALL'); setSelectedBrand('ALL'); setSearchQuery(''); }} class="bg-amber-500/20 text-amber-400 border border-amber-500/30 px-4 py-2 rounded-xl text-xs font-semibold">
-                  Reset All Filters
-                </button>
+              <div class="bg-white border border-slate-200 rounded-2xl p-12 text-center space-y-3 shadow-xs">
+                <div class="text-3xl">🔍</div>
+                <p class="text-xs text-slate-500">No fabrics match your search query.</p>
+                <button onClick={() => { setCatalogViewFilterMode('ALL'); setSelectedVideo('ALL'); setSelectedCategory('ALL'); setSelectedBrand('ALL'); setSearchQuery(''); }} class="text-xs bg-slate-100 px-4 py-2 rounded-xl font-bold text-slate-700">Reset Filters</button>
               </div>
             ) : (
-              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {products.map(product => (
-                  <ProductCard 
+                  <MyntraProductCard 
                     key={product.id} 
                     product={product} 
                     onClickPdp={() => onSelectProductPdp(product)}
@@ -832,43 +835,54 @@
       );
     }
 
-    function ProductCard({ product, onClickPdp, onAddToCart, onQuickWhatsapp }) {
+    // --- MYNTRA E-COMMERCE PRODUCT CARD ---
+    function MyntraProductCard({ product, onClickPdp, onAddToCart, onQuickWhatsapp }) {
       const discountPercent = product.mrpPrice ? Math.round(((product.mrpPrice - product.sellingPrice) / product.mrpPrice) * 100) : 0;
 
       return (
-        <div class="group bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden hover:border-amber-500/40 transition duration-300 flex flex-col justify-between">
-          <div class="relative h-56 w-full overflow-hidden bg-zinc-950 cursor-pointer" onClick={onClickPdp}>
-            <img src={product.imageUrl} alt={product.name} class="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
-            <div class="absolute top-3 left-3 flex flex-wrap gap-1.5">
-              <span class="bg-black/80 text-amber-400 border border-amber-500/30 text-[10px] font-semibold px-2.5 py-1 rounded-md">{product.brand}</span>
-              {discountPercent > 0 && (
-                <span class="bg-red-950 text-red-400 border border-red-800 text-[10px] font-bold px-2 py-1 rounded-md">
-                  {discountPercent}% OFF
-                </span>
-              )}
-            </div>
+        <div class="group bg-white border border-myntra-border rounded-2xl overflow-hidden hover:border-pink-300 hover:shadow-lg transition duration-300 flex flex-col justify-between">
+          <div class="relative aspect-square w-full bg-slate-100 overflow-hidden cursor-pointer" onClick={onClickPdp}>
+            <img src={product.imageUrl} alt={product.name} class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+            
+            {discountPercent > 0 && (
+              <span class="absolute top-2 left-2 bg-red-600 text-white font-extrabold text-[10px] px-2 py-0.5 rounded-md shadow-xs">
+                {discountPercent}% OFF
+              </span>
+            )}
+            
+            <span class="absolute top-2 right-2 bg-slate-900/80 backdrop-blur-xs text-white text-[10px] font-bold px-2 py-0.5 rounded-md">
+              {product.brand}
+            </span>
           </div>
 
-          <div class="p-5 flex-1 flex flex-col justify-between space-y-4">
-            <div class="space-y-2 cursor-pointer" onClick={onClickPdp}>
-              <div class="flex items-center justify-between text-xs text-zinc-400">
-                <span>SKU: {product.sku}</span>
-                <span class="text-amber-400/90 font-medium">{product.fabricType}</span>
+          <div class="p-3.5 space-y-3 flex-1 flex flex-col justify-between">
+            <div class="space-y-1 cursor-pointer" onClick={onClickPdp}>
+              <h4 class="font-heading font-bold text-xs text-slate-900 group-hover:text-myntra-pink transition line-clamp-2 leading-snug">
+                {product.name}
+              </h4>
+              <div class="flex items-baseline space-x-1.5">
+                <span class="text-sm font-extrabold text-slate-900 font-heading">₹{product.sellingPrice}</span>
+                {product.mrpPrice && (
+                  <span class="text-[11px] text-slate-400 line-through">₹{product.mrpPrice}</span>
+                )}
               </div>
-              <h4 class="font-heading font-bold text-lg text-white group-hover:text-amber-400 transition">{product.name}</h4>
             </div>
 
-            <div class="pt-3 border-t border-zinc-800 flex items-center justify-between gap-2">
-              <div>
-                <div class="flex items-baseline space-x-1.5">
-                  <span class="text-xl font-extrabold text-amber-400 font-heading">₹{product.sellingPrice}</span>
-                  {product.mrpPrice && <span class="text-xs text-zinc-500 line-through">₹{product.mrpPrice}</span>}
-                </div>
-              </div>
-              <div class="flex items-center space-x-2">
-                <button onClick={onAddToCart} class="bg-amber-500 hover:bg-amber-400 text-black font-bold px-3 py-2 rounded-xl text-xs shadow">+ Cart</button>
-                <button onClick={onQuickWhatsapp} class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold p-2 rounded-xl text-xs">💬</button>
-              </div>
+            {/* HOMEPAGE CART & WHATSAPP BUTTONS */}
+            <div class="pt-2 border-t border-slate-100 flex items-center space-x-1.5">
+              <button 
+                onClick={onAddToCart}
+                class="flex-1 bg-myntra-pink hover:bg-myntra-pinkHover text-white font-bold py-2 rounded-xl text-[11px] text-center shadow-xs transition"
+              >
+                + Add Cart
+              </button>
+              <button 
+                onClick={onQuickWhatsapp}
+                class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-2.5 py-2 rounded-xl text-[11px] transition shadow-xs"
+                title="Quick WhatsApp Order"
+              >
+                💬
+              </button>
             </div>
           </div>
         </div>
@@ -878,28 +892,28 @@
     // --- PRODUCT DETAIL PAGE MODAL ---
     function ProductDetailPageModal({ product, storeSettings, onClose, onAddToCart }) {
       const [selectedImg, setSelectedImg] = useState(product.imageUrl);
-      const [qty, setQty] = useState(1);
-      const gallery = product.galleryImages && product.galleryImages.length > 0 ? product.galleryImages : [product.imageUrl];
+      const [selectedQty, setSelectedQty] = useState(1);
       const discountPercent = product.mrpPrice ? Math.round(((product.mrpPrice - product.sellingPrice) / product.mrpPrice) * 100) : 0;
-      const totalPrice = product.sellingPrice * qty;
+      const gallery = product.galleryImages && product.galleryImages.length > 0 ? product.galleryImages : [product.imageUrl];
+      const totalPrice = product.sellingPrice * selectedQty;
 
-      const whatsappText = `Hi Humjoly Tailors, I want to order:\n\n🧵 *Product*: ${product.name}\n🔖 *SKU*: ${product.sku}\n📏 *Quantity*: ${qty} ${product.unit}\n💵 *Total Price*: ₹${totalPrice}\n\nPlease confirm availability.`;
+      const whatsappText = `Hi Humjoly Tailors, I want to order:\n\n🧵 *Product*: ${product.name}\n🔖 *SKU*: ${product.sku}\n📏 *Quantity*: ${selectedQty} ${product.unit}\n💵 *Total Price*: ₹${totalPrice}\n\nPlease confirm availability and payment details.`;
       const whatsappUrl = `https://wa.me/${storeSettings.whatsappPhone}?text=${encodeURIComponent(whatsappText)}`;
 
       return (
-        <div class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-          <div class="bg-zinc-900 border border-zinc-700 rounded-3xl max-w-2xl w-full p-6 space-y-6 shadow-2xl relative my-8">
-            <button onClick={onClose} class="absolute top-4 right-4 text-zinc-400 hover:text-white text-xl font-bold">✕</button>
+        <div class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+          <div class="bg-white border border-slate-200 rounded-3xl max-w-2xl w-full p-6 space-y-6 shadow-2xl relative my-8">
+            <button onClick={onClose} class="absolute top-4 right-4 text-slate-400 hover:text-slate-900 text-xl font-bold">✕</button>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div class="space-y-3">
-                <div class="aspect-square w-full rounded-2xl overflow-hidden bg-zinc-950 border border-zinc-800">
+                <div class="aspect-square w-full rounded-2xl overflow-hidden bg-slate-100 border border-slate-200">
                   <img src={selectedImg} class="w-full h-full object-cover" />
                 </div>
                 {gallery.length > 1 && (
                   <div class="flex space-x-2">
                     {gallery.map((img, idx) => (
-                      <img key={idx} src={img} onClick={() => setSelectedImg(img)} class={`w-14 h-14 rounded-xl object-cover cursor-pointer border-2 ${selectedImg === img ? 'border-amber-500' : 'border-zinc-800'}`} />
+                      <img key={idx} src={img} onClick={() => setSelectedImg(img)} class={`w-14 h-14 rounded-xl object-cover cursor-pointer border-2 transition ${selectedImg === img ? 'border-myntra-pink scale-105' : 'border-slate-200'}`} />
                     ))}
                   </div>
                 )}
@@ -907,35 +921,35 @@
 
               <div class="space-y-4 flex flex-col justify-between">
                 <div class="space-y-2">
-                  <span class="bg-amber-500/10 text-amber-400 border border-amber-500/30 text-xs font-bold px-2.5 py-0.5 rounded">{product.brand}</span>
-                  <h3 class="font-heading font-extrabold text-xl text-white">{product.name}</h3>
+                  <span class="font-bold text-myntra-pink bg-pink-50 px-2 py-0.5 rounded text-xs border border-pink-200">{product.brand}</span>
+                  <h3 class="font-heading font-extrabold text-xl text-slate-900">{product.name}</h3>
                   <div class="flex items-baseline space-x-2 pt-1">
-                    <span class="text-2xl font-extrabold text-amber-400 font-heading">₹{product.sellingPrice}</span>
-                    {product.mrpPrice && <span class="text-sm text-zinc-500 line-through">₹{product.mrpPrice}</span>}
-                    {discountPercent > 0 && <span class="bg-red-950 text-red-400 text-xs font-bold px-2 py-0.5 rounded border border-red-800">{discountPercent}% OFF</span>}
+                    <span class="text-2xl font-extrabold text-slate-900 font-heading">₹{product.sellingPrice}</span>
+                    {product.mrpPrice && <span class="text-sm text-slate-400 line-through">₹{product.mrpPrice}</span>}
+                    {discountPercent > 0 && <span class="bg-red-100 text-red-700 text-xs font-bold px-2 py-0.5 rounded">{discountPercent}% OFF</span>}
                   </div>
                 </div>
 
-                <div class="bg-zinc-950 p-3 rounded-xl border border-zinc-800 space-y-2 text-xs">
-                  <div class="flex justify-between text-zinc-400"><span>Fabric Composition:</span><span class="font-semibold text-white">{product.fabricType}</span></div>
-                  <div class="flex justify-between text-zinc-400"><span>Stock Level:</span><span class="font-semibold text-emerald-400">{product.currentStock} {product.unit} available</span></div>
+                <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-2 text-xs">
+                  <div class="flex justify-between text-slate-600"><span>Fabric Composition:</span><span class="font-semibold text-slate-900">{product.fabricType}</span></div>
+                  <div class="flex justify-between text-slate-600"><span>Stock Availability:</span><span class="font-semibold text-emerald-600">{product.currentStock} {product.unit} available</span></div>
                 </div>
 
                 <div class="flex items-center justify-between pt-1">
-                  <span class="text-xs text-zinc-400">Select Quantity:</span>
-                  <div class="flex items-center space-x-3 bg-zinc-950 px-3 py-1.5 rounded-xl border border-zinc-800">
-                    <button onClick={() => setQty(Math.max(1, qty - 1))} class="text-amber-400 font-bold px-1 text-sm">-</button>
-                    <span class="font-bold text-white text-xs w-4 text-center">{qty}</span>
-                    <button onClick={() => setQty(qty + 1)} class="text-amber-400 font-bold px-1 text-sm">+</button>
+                  <span class="text-xs text-slate-600 font-semibold">Select Quantity:</span>
+                  <div class="flex items-center space-x-3 bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200">
+                    <button onClick={() => setSelectedQty(Math.max(1, selectedQty - 1))} class="text-slate-900 font-bold text-sm px-1">-</button>
+                    <span class="font-bold text-slate-900 text-xs w-4 text-center">{selectedQty}</span>
+                    <button onClick={() => setSelectedQty(selectedQty + 1)} class="text-slate-900 font-bold text-sm px-1">+</button>
                   </div>
                 </div>
 
                 <div class="space-y-2 pt-2">
-                  <a href={whatsappUrl} target="_blank" rel="noreferrer" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-center block text-xs shadow">
+                  <a href={whatsappUrl} target="_blank" rel="noreferrer" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-center block text-xs shadow-xs">
                     💬 Order on WhatsApp (₹{totalPrice})
                   </a>
-                  <button onClick={() => { onAddToCart(product, qty); onClose(); }} class="w-full bg-amber-500 hover:bg-amber-400 text-black font-bold py-3 rounded-xl text-xs">
-                    🛒 Add {qty} {product.unit} to Cart
+                  <button onClick={() => { onAddToCart(product, selectedQty); onClose(); }} class="w-full bg-myntra-pink hover:bg-myntra-pinkHover text-white font-bold py-3 rounded-xl text-xs transition">
+                    🛒 Add {selectedQty} {product.unit} to Cart
                   </button>
                 </div>
               </div>
@@ -958,29 +972,29 @@
       };
 
       return (
-        <div class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex justify-end">
-          <div class="bg-zinc-900 border-l border-zinc-800 max-w-md w-full h-full p-6 flex flex-col justify-between shadow-2xl">
+        <div class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex justify-end">
+          <div class="bg-white border-l border-slate-200 max-w-md w-full h-full p-6 flex flex-col justify-between shadow-2xl">
             <div class="space-y-4">
-              <div class="flex items-center justify-between border-b border-zinc-800 pb-4">
-                <h3 class="font-heading font-bold text-xl text-white">Your Cart ({cart.reduce((s,i)=>s+i.qty,0)})</h3>
-                <button onClick={onClose} class="text-zinc-400 hover:text-white text-xl">✕</button>
+              <div class="flex items-center justify-between border-b border-slate-200 pb-4">
+                <h3 class="font-heading font-bold text-lg text-slate-900">Your Cart ({cart.reduce((s,i)=>s+i.qty,0)})</h3>
+                <button onClick={onClose} class="text-slate-400 hover:text-slate-900 text-lg">✕</button>
               </div>
 
               {cart.length === 0 ? (
-                <div class="text-center py-12 text-zinc-400 text-xs">Your fabric cart is empty.</div>
+                <div class="text-center py-12 text-slate-400 text-xs">Your cart is empty.</div>
               ) : (
                 <div class="space-y-3 max-h-[60vh] overflow-y-auto custom-scrollbar pr-1">
                   {cart.map((item) => (
-                    <div key={item.product.id} class="bg-zinc-950 p-3 rounded-2xl border border-zinc-800 flex space-x-3 items-center justify-between">
+                    <div key={item.product.id} class="bg-slate-50 p-3 rounded-2xl border border-slate-200 flex space-x-3 items-center justify-between">
                       <img src={item.product.imageUrl} class="w-14 h-14 rounded-xl object-cover" />
                       <div class="flex-1 min-w-0">
-                        <h4 class="font-heading font-bold text-xs text-white truncate">{item.product.name}</h4>
-                        <div class="text-xs text-amber-400 font-semibold mt-0.5">₹{item.product.sellingPrice} / {item.product.unit}</div>
+                        <h4 class="font-heading font-bold text-xs text-slate-900 truncate">{item.product.name}</h4>
+                        <div class="text-xs text-myntra-pink font-semibold mt-0.5">₹{item.product.sellingPrice} / {item.product.unit}</div>
                       </div>
-                      <div class="flex items-center space-x-2 bg-zinc-900 px-2 py-1 rounded-lg border border-zinc-800">
-                        <button onClick={() => updateCartQty(item.product.id, item.qty - 1)} class="text-amber-400 font-bold px-1 text-xs">-</button>
-                        <span class="text-xs font-bold text-white w-4 text-center">{item.qty}</span>
-                        <button onClick={() => updateCartQty(item.product.id, item.qty + 1)} class="text-amber-400 font-bold px-1 text-xs">+</button>
+                      <div class="flex items-center space-x-2 bg-white px-2 py-1 rounded-lg border border-slate-200">
+                        <button onClick={() => updateCartQty(item.product.id, item.qty - 1)} class="text-slate-900 font-bold px-1 text-xs">-</button>
+                        <span class="text-xs font-bold text-slate-900 w-4 text-center">{item.qty}</span>
+                        <button onClick={() => updateCartQty(item.product.id, item.qty + 1)} class="text-slate-900 font-bold px-1 text-xs">+</button>
                       </div>
                     </div>
                   ))}
@@ -989,12 +1003,12 @@
             </div>
 
             {cart.length > 0 && (
-              <div class="space-y-3 border-t border-zinc-800 pt-4">
+              <div class="space-y-3 border-t border-slate-200 pt-4">
                 <div class="flex justify-between items-baseline">
-                  <span class="text-xs text-zinc-400">Total Order Value:</span>
-                  <span class="text-2xl font-extrabold text-amber-400 font-heading">₹{totalAmount}</span>
+                  <span class="text-xs text-slate-500 font-medium">Total Order Value:</span>
+                  <span class="text-xl font-extrabold text-slate-900 font-heading">₹{totalAmount}</span>
                 </div>
-                <a href={generateCombinedWhatsapp()} target="_blank" rel="noreferrer" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 rounded-xl text-center block text-sm shadow">
+                <a href={generateCombinedWhatsapp()} target="_blank" rel="noreferrer" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 rounded-xl text-center block text-xs shadow-xs">
                   Send Combined Order on WhatsApp 🚀
                 </a>
               </div>
@@ -1010,20 +1024,20 @@
       const whatsappUrl = `https://wa.me/${storeSettings.whatsappPhone}?text=${encodeURIComponent(whatsappText)}`;
 
       return (
-        <div class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div class="bg-zinc-900 border border-zinc-700 rounded-3xl max-w-md w-full p-6 space-y-5 shadow-2xl">
-            <div class="flex justify-between border-b border-zinc-800 pb-3">
-              <h3 class="font-heading font-bold text-lg text-white">Quick WhatsApp Order</h3>
-              <button onClick={onClose} class="text-zinc-400">✕</button>
+        <div class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div class="bg-white border border-slate-200 rounded-3xl max-w-md w-full p-6 space-y-5 shadow-2xl">
+            <div class="flex justify-between border-b border-slate-200 pb-3">
+              <h3 class="font-heading font-bold text-lg text-slate-900">Quick WhatsApp Order</h3>
+              <button onClick={onClose} class="text-slate-400">✕</button>
             </div>
-            <div class="flex space-x-3 bg-zinc-950 p-3 rounded-2xl border border-zinc-800">
+            <div class="flex space-x-3 bg-slate-50 p-3 rounded-2xl border border-slate-200">
               <img src={product.imageUrl} class="w-14 h-14 rounded-xl object-cover" />
               <div>
-                <h4 class="font-heading font-bold text-xs text-white">{product.name}</h4>
-                <p class="text-xs text-amber-400 font-semibold mt-1">₹{product.sellingPrice} / {product.unit}</p>
+                <h4 class="font-heading font-bold text-xs text-slate-900">{product.name}</h4>
+                <p class="text-xs text-myntra-pink font-semibold mt-1">₹{product.sellingPrice} / {product.unit}</p>
               </div>
             </div>
-            <a href={whatsappUrl} target="_blank" rel="noreferrer" class="w-full bg-emerald-600 text-white font-bold py-3.5 rounded-xl text-center block text-sm shadow">
+            <a href={whatsappUrl} target="_blank" rel="noreferrer" class="w-full bg-emerald-600 text-white font-bold py-3.5 rounded-xl text-center block text-xs shadow-xs">
               Send Message on WhatsApp 🚀
             </a>
           </div>
@@ -1032,7 +1046,7 @@
     }
 
     // ==========================================
-    // INTERNAL OMS & ADMIN VIEW (FULL PRD FEATURE SUITE)
+    // INTERNAL OMS & ADMIN VIEW (COMPLETE PRD SUITE)
     // ==========================================
     function OmsView({ 
       activeTab, 
@@ -1047,6 +1061,9 @@
       categoriesList,
       addDynamicBrand,
       addDynamicCategory,
+      adminUsers,
+      saveAdminUsersState,
+      currentLoggedInUser,
       totalRevenue, 
       pendingPayment, 
       readyToDispatchCount, 
@@ -1057,42 +1074,48 @@
     }) {
       return (
         <div class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-          <div class="grid grid-cols-2 lg:grid-cols-5 gap-4">
-            <div class="bg-zinc-900 border border-zinc-800 p-4 rounded-2xl space-y-1">
-              <div class="text-xs text-zinc-400 font-medium">Total Orders</div>
-              <div class="text-2xl font-extrabold text-white font-heading">{orders.length}</div>
-            </div>
-            <div class="bg-zinc-900 border border-zinc-800 p-4 rounded-2xl space-y-1">
-              <div class="text-xs text-zinc-400 font-medium">Total Revenue</div>
-              <div class="text-2xl font-extrabold text-amber-400 font-heading">₹{totalRevenue.toLocaleString()}</div>
-            </div>
-            <div class="bg-zinc-900 border border-zinc-800 p-4 rounded-2xl space-y-1">
-              <div class="text-xs text-zinc-400 font-medium">Pending Payments</div>
-              <div class="text-2xl font-extrabold text-red-400 font-heading">₹{pendingPayment.toLocaleString()}</div>
-            </div>
-            <div class="bg-zinc-900 border border-zinc-800 p-4 rounded-2xl space-y-1">
-              <div class="text-xs text-zinc-400 font-medium">Ready to Dispatch</div>
-              <div class="text-2xl font-extrabold text-emerald-400 font-heading">{readyToDispatchCount}</div>
-            </div>
-            <div class="bg-zinc-900 border border-zinc-800 p-4 rounded-2xl space-y-1 col-span-2 lg:col-span-1">
-              <div class="text-xs text-zinc-400 font-medium">Low Stock Warning</div>
-              <div class="text-2xl font-extrabold text-amber-500 font-heading">{lowStockCount} items</div>
+          
+          {/* USER WELCOME BADGE */}
+          <div class="flex justify-between items-center bg-white p-3.5 rounded-2xl border border-slate-200 shadow-xs">
+            <div class="flex items-center space-x-2 text-xs">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span class="font-bold text-slate-900">Active Admin Session:</span>
+              <span class="text-myntra-pink font-semibold">{currentLoggedInUser?.name || 'Owner'} ({currentLoggedInUser?.role || 'Master Admin'})</span>
             </div>
           </div>
 
-          <div class="flex items-center space-x-2 border-b border-zinc-800 overflow-x-auto custom-scrollbar pb-2">
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-white border border-slate-200 p-4 rounded-2xl space-y-1 shadow-xs">
+              <div class="text-xs text-slate-500 font-medium">Total Revenue</div>
+              <div class="text-2xl font-extrabold text-slate-900 font-heading">₹{totalRevenue.toLocaleString()}</div>
+            </div>
+            <div class="bg-white border border-slate-200 p-4 rounded-2xl space-y-1 shadow-xs">
+              <div class="text-xs text-slate-500 font-medium">Total Orders</div>
+              <div class="text-2xl font-extrabold text-slate-900 font-heading">{orders.length}</div>
+            </div>
+            <div class="bg-white border border-slate-200 p-4 rounded-2xl space-y-1 shadow-xs">
+              <div class="text-xs text-slate-500 font-medium">Pending Payments</div>
+              <div class="text-2xl font-extrabold text-red-600 font-heading">₹{pendingPayment.toLocaleString()}</div>
+            </div>
+            <div class="bg-white border border-slate-200 p-4 rounded-2xl space-y-1 shadow-xs">
+              <div class="text-xs text-slate-500 font-medium">Low Stock Warning</div>
+              <div class="text-2xl font-extrabold text-amber-600 font-heading">{lowStockCount} items</div>
+            </div>
+          </div>
+
+          <div class="flex items-center space-x-2 border-b border-slate-200 overflow-x-auto pb-2 custom-scrollbar">
             {[
               { id: 'orders', label: '📦 Orders List' },
-              { id: 'create', label: '➕ New Order (AI & Manual)' },
-              { id: 'products', label: '🧵 Holistic Product CRUD (Images, Brands, Custom Categories)' },
-              { id: 'customizer', label: '🎨 DIY Website Customizer' },
+              { id: 'create', label: '➕ New Order (10-Column Manual & AI)' },
+              { id: 'products', label: '🧵 Holistic Product CRUD (File Upload & Custom Category)' },
+              { id: 'customizer', label: '🎨 Exhaustive DIY Customizer & Multi-Admin Users' },
               { id: 'gsheets', label: '🟢 CSV Import & Dedupe' },
               { id: 'analytics', label: '🎥 Video Revenue' },
             ].map(tab => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                class={`px-4 py-2.5 rounded-xl text-xs font-semibold shrink-0 transition ${activeTab === tab.id ? 'bg-amber-500 text-black shadow' : 'bg-zinc-900 text-zinc-400 hover:text-zinc-200'}`}
+                class={`px-4 py-2 rounded-xl text-xs font-semibold shrink-0 transition ${activeTab === tab.id ? 'bg-slate-900 text-white shadow-xs' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'}`}
               >
                 <span>{tab.label}</span>
               </button>
@@ -1121,7 +1144,12 @@
           )}
 
           {activeTab === 'customizer' && (
-            <OmsWebsiteCustomizerTab storeSettings={storeSettings} saveSettingsState={saveSettingsState} />
+            <OmsWebsiteCustomizerTab 
+              storeSettings={storeSettings} 
+              saveSettingsState={saveSettingsState}
+              adminUsers={adminUsers}
+              saveAdminUsersState={saveAdminUsersState}
+            />
           )}
 
           {activeTab === 'gsheets' && (
@@ -1139,24 +1167,24 @@
       return (
         <div class="space-y-4">
           <div class="flex justify-between items-center">
-            <h3 class="font-heading font-bold text-xl text-white">Orders List & Lifecycle</h3>
-            <button onClick={onGoCreate} class="bg-amber-500 text-black font-bold px-4 py-2.5 rounded-xl text-xs">+ Create Order</button>
+            <h3 class="font-heading font-bold text-lg text-slate-900">Orders List</h3>
+            <button onClick={onGoCreate} class="bg-myntra-pink text-white font-bold px-4 py-2 rounded-xl text-xs shadow-xs">+ Create Order</button>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {orders.map(order => (
-              <div key={order.id} onClick={() => onSelectOrder(order)} class="bg-zinc-900 border border-zinc-800 hover:border-amber-500/40 p-5 rounded-2xl cursor-pointer space-y-3">
-                <div class="flex items-center justify-between">
-                  <span class="font-heading font-extrabold text-amber-400 text-sm">{order.id}</span>
-                  <span class="text-[10px] font-bold uppercase bg-zinc-800 text-amber-300 px-2 py-0.5 rounded">{order.orderStatus}</span>
+              <div key={order.id} onClick={() => onSelectOrder(order)} class="bg-white border border-slate-200 p-5 rounded-2xl cursor-pointer hover:border-slate-400 transition space-y-3 shadow-xs">
+                <div class="flex justify-between items-center">
+                  <span class="font-heading font-extrabold text-myntra-pink text-xs">{order.id}</span>
+                  <span class="text-[10px] font-bold uppercase bg-slate-100 px-2 py-0.5 rounded border border-slate-200">{order.orderStatus}</span>
                 </div>
                 <div>
-                  <h4 class="font-heading font-bold text-white text-base">{order.customer.name}</h4>
-                  <p class="text-xs text-zinc-400">📞 {order.customer.phone}</p>
+                  <h4 class="font-heading font-bold text-slate-900 text-sm">{order.customer.name}</h4>
+                  <p class="text-xs text-slate-500">📞 {order.customer.phone}</p>
                 </div>
-                <div class="flex justify-between text-xs pt-2 border-t border-zinc-800">
-                  <span class="text-zinc-400">{order.fabricDescription}</span>
-                  <span class="font-bold text-white">₹{order.totalAmount}</span>
+                <div class="text-xs flex justify-between pt-2 border-t border-slate-100">
+                  <span class="text-slate-500">{order.fabricDescription}</span>
+                  <span class="font-bold text-slate-900">₹{order.totalAmount}</span>
                 </div>
               </div>
             ))}
@@ -1165,31 +1193,40 @@
       );
     }
 
+    // --- COMPLETE 10-COLUMN MANUAL ORDER FORM & AI OCR ---
     function OmsCreateOrderTab({ products, orders, saveOrdersState, onSuccess }) {
-      const [entryType, setEntryType] = useState('ai');
+      const [entryType, setEntryType] = useState('manual');
       const [aiScanning, setAiScanning] = useState(false);
       const [extractedDraft, setExtractedDraft] = useState(null);
 
+      // ALL 10 GOOGLE SHEET COLUMNS FORM STATE
+      const [ieNo, setIeNo] = useState(orders.length + 1);
       const [custName, setCustName] = useState('');
       const [custPhone, setCustPhone] = useState('');
-      const [custAddress, setCustAddress] = useState('');
+      const [orderDate, setOrderDate] = useState(new Date().toLocaleDateString('en-GB'));
       const [videoCode, setVideoCode] = useState('Video no 18');
-      const [selectedProdId, setSelectedProdId] = useState(products[0]?.id || '');
-      const [qty, setQty] = useState(2);
+      const [fabricDesc, setFabricDesc] = useState('');
+      const [quantityStr, setQuantityStr] = useState('2 pc');
+      const [custAddress, setCustAddress] = useState('');
+      const [amountPaidVal, setAmountPaidVal] = useState(1600);
+      const [paymentStatusVal, setPaymentStatusVal] = useState('PAID');
 
       const handleSimulateAiUpload = () => {
         setAiScanning(true);
         setTimeout(() => {
           setAiScanning(false);
           setExtractedDraft({
+            ie: orders.length + 1,
             customerName: 'Atish Kumar',
             phoneNumber: '9885616510',
-            address: 'Government Junior College Thunkul, AP',
+            date: new Date().toLocaleDateString('en-GB'),
             videoAttribution: 'Video no 13',
             fabricDescription: 'Soktas shirt checks',
             quantity: '2 pc',
+            address: 'Government Junior College Thunkul, AP',
             totalAmount: 1600,
-            amountPaid: 1600
+            amountPaid: 1600,
+            paymentStatus: 'PAID'
           });
         }, 1200);
       };
@@ -1198,8 +1235,8 @@
         if (!extractedDraft) return;
         const newOrder = {
           id: `HT-${1000 + orders.length + 1}`,
-          ie: orders.length + 1,
-          date: new Date().toLocaleDateString('en-GB'),
+          ie: extractedDraft.ie,
+          date: extractedDraft.date,
           customer: { name: extractedDraft.customerName, phone: extractedDraft.phoneNumber, address: extractedDraft.address },
           videoAttribution: extractedDraft.videoAttribution,
           fabricDescription: extractedDraft.fabricDescription,
@@ -1207,9 +1244,9 @@
           totalAmount: extractedDraft.totalAmount,
           amountPaid: extractedDraft.amountPaid,
           balanceAmount: 0,
-          paymentStatus: 'PAID',
+          paymentStatus: extractedDraft.paymentStatus,
           orderStatus: 'CONFIRMED',
-          source: 'WhatsApp Direct'
+          source: 'WhatsApp AI OCR'
         };
         saveOrdersState([newOrder, ...orders]);
         onSuccess();
@@ -1217,22 +1254,21 @@
 
       const handleCreateManualOrder = (e) => {
         e.preventDefault();
-        const selProd = products.find(p => p.id === selectedProdId);
-        const total = (selProd?.sellingPrice || 800) * qty;
+        const paidNum = Number(amountPaidVal);
         const newOrder = {
           id: `HT-${1000 + orders.length + 1}`,
-          ie: orders.length + 1,
-          date: new Date().toLocaleDateString('en-GB'),
+          ie: Number(ieNo),
+          date: orderDate,
           customer: { name: custName, phone: custPhone, address: custAddress },
           videoAttribution: videoCode,
-          fabricDescription: selProd ? selProd.name : 'Custom Fabric',
-          quantity: `${qty} pc`,
-          totalAmount: total,
-          amountPaid: total,
+          fabricDescription: fabricDesc || 'Custom Suiting Fabric',
+          quantity: quantityStr,
+          totalAmount: paidNum,
+          amountPaid: paidNum,
           balanceAmount: 0,
-          paymentStatus: 'PAID',
+          paymentStatus: paymentStatusVal,
           orderStatus: 'CONFIRMED',
-          source: 'Manual Entry'
+          source: 'Manual Form'
         };
         saveOrdersState([newOrder, ...orders]);
         onSuccess();
@@ -1240,41 +1276,68 @@
 
       return (
         <div class="max-w-3xl mx-auto space-y-6">
-          <div class="bg-zinc-900 p-2 rounded-2xl border border-zinc-800 flex space-x-2">
-            <button onClick={() => setEntryType('ai')} class={`flex-1 py-3 rounded-xl font-heading font-bold text-xs ${entryType === 'ai' ? 'bg-amber-500 text-black shadow' : 'text-zinc-400'}`}>🤖 AI Screenshot / Video Upload</button>
-            <button onClick={() => setEntryType('manual')} class={`flex-1 py-3 rounded-xl font-heading font-bold text-xs ${entryType === 'manual' ? 'bg-amber-500 text-black shadow' : 'text-zinc-400'}`}>✍️ Manual Order Form</button>
+          <div class="bg-white p-2 rounded-2xl border border-slate-200 flex space-x-2 shadow-xs">
+            <button onClick={() => setEntryType('manual')} class={`flex-1 py-2.5 rounded-xl font-heading font-bold text-xs ${entryType === 'manual' ? 'bg-myntra-pink text-white shadow-xs' : 'text-slate-600'}`}>✍️ 10-Column Manual Order Form</button>
+            <button onClick={() => setEntryType('ai')} class={`flex-1 py-2.5 rounded-xl font-heading font-bold text-xs ${entryType === 'ai' ? 'bg-myntra-pink text-white shadow-xs' : 'text-slate-600'}`}>🤖 Gemini AI OCR Parser</button>
           </div>
 
-          {entryType === 'ai' ? (
-            <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 space-y-4">
-              <h3 class="font-heading font-bold text-xl text-white">Gemini AI Order OCR Parser</h3>
-              <div class="border-2 border-dashed border-zinc-700 hover:border-amber-500 rounded-2xl p-8 text-center space-y-4 bg-zinc-950/50">
-                <div class="text-4xl">📸 🎥</div>
-                <button onClick={handleSimulateAiUpload} class="bg-amber-500 text-black font-bold px-4 py-2 rounded-xl text-xs">Simulate OCR Extraction</button>
+          {entryType === 'manual' ? (
+            <form onSubmit={handleCreateManualOrder} class="bg-white border border-slate-200 rounded-3xl p-6 space-y-4 text-xs shadow-xs">
+              <div class="border-b pb-2">
+                <h3 class="font-heading font-extrabold text-lg text-slate-900">Create Order — All 10 Google Sheet Columns</h3>
+                <p class="text-slate-500">Enter full order information matching Google Sheet structure.</p>
               </div>
-              {aiScanning && <div class="text-amber-400 text-xs">Parsing media...</div>}
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div><label class="text-slate-600 font-semibold">1. S.No (IE) *</label><input type="number" required value={ieNo} onChange={e=>setIeNo(e.target.value)} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-bold" /></div>
+                <div><label class="text-slate-600 font-semibold">2. Order Date *</label><input type="text" required value={orderDate} onChange={e=>setOrderDate(e.target.value)} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5" /></div>
+
+                <div><label class="text-slate-600 font-semibold">3. Customer Name *</label><input type="text" required value={custName} onChange={e=>setCustName(e.target.value)} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-bold" /></div>
+                <div><label class="text-slate-600 font-semibold">4. Phone Number *</label><input type="text" required value={custPhone} onChange={e=>setCustPhone(e.target.value)} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-mono" /></div>
+
+                <div><label class="text-slate-600 font-semibold">5. Video No. Code</label><input type="text" value={videoCode} onChange={e=>setVideoCode(e.target.value)} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-bold text-red-600" /></div>
+                <div><label class="text-slate-600 font-semibold">6. Fabric Description *</label><input type="text" required value={fabricDesc} onChange={e=>setFabricDesc(e.target.value)} placeholder="e.g. Soktas shirt checks" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-bold" /></div>
+
+                <div><label class="text-slate-600 font-semibold">7. Quantity *</label><input type="text" required value={quantityStr} onChange={e=>setQuantityStr(e.target.value)} placeholder="e.g. 2 pc" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5" /></div>
+                <div><label class="text-slate-600 font-semibold">8. Amount Paid (₹) *</label><input type="number" required value={amountPaidVal} onChange={e=>setAmountPaidVal(e.target.value)} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-bold" /></div>
+
+                <div class="sm:col-span-2"><label class="text-slate-600 font-semibold">9. Customer Full Delivery Address *</label><input type="text" required value={custAddress} onChange={e=>setCustAddress(e.target.value)} placeholder="House No, Colony, City, Pin..." class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5" /></div>
+
+                <div class="sm:col-span-2">
+                  <label class="text-slate-600 font-semibold">10. Payment Status *</label>
+                  <select value={paymentStatusVal} onChange={e=>setPaymentStatusVal(e.target.value)} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-bold">
+                    <option value="PAID">PAID</option>
+                    <option value="PARTIAL">PARTIAL</option>
+                    <option value="DUE">DUE</option>
+                  </select>
+                </div>
+              </div>
+
+              <button type="submit" class="w-full bg-myntra-pink hover:bg-myntra-pinkHover text-white font-bold py-3 rounded-xl text-xs shadow-xs">
+                Save Order to OMS & Firestore ✓
+              </button>
+            </form>
+          ) : (
+            <div class="bg-white border border-slate-200 rounded-3xl p-6 space-y-4">
+              <h3 class="font-heading font-bold text-lg text-slate-900">Gemini AI OCR Parser</h3>
+              <div class="border-2 border-dashed border-slate-300 rounded-2xl p-8 text-center space-y-4">
+                <div class="text-3xl">📸 🎥</div>
+                <button onClick={handleSimulateAiUpload} class="bg-myntra-pink text-white font-bold px-4 py-2 rounded-xl text-xs shadow-xs">Simulate OCR Parsing</button>
+              </div>
+              {aiScanning && <div class="text-myntra-pink text-xs font-bold">Extracting media...</div>}
               {extractedDraft && !aiScanning && (
-                <div class="bg-zinc-950 p-4 rounded-xl border border-zinc-800 space-y-3 text-xs">
-                  <div class="text-amber-400 font-bold">Extracted Draft Review: {extractedDraft.customerName} ({extractedDraft.phoneNumber})</div>
-                  <button onClick={handleConfirmAiDraft} class="bg-amber-500 text-black font-bold py-2 rounded-xl text-xs w-full">Confirm Order ✓</button>
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3 text-xs">
+                  <div class="text-myntra-pink font-bold">Parsed: {extractedDraft.customerName} ({extractedDraft.phoneNumber})</div>
+                  <button onClick={handleConfirmAiDraft} class="bg-emerald-600 text-white font-bold py-2 rounded-xl text-xs w-full">Confirm Order ✓</button>
                 </div>
               )}
             </div>
-          ) : (
-            <form onSubmit={handleCreateManualOrder} class="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 space-y-4 text-xs">
-              <h3 class="font-heading font-bold text-xl text-white">Create Order Manually</h3>
-              <div class="grid grid-cols-2 gap-3">
-                <div><label class="text-zinc-400">Customer Name *</label><input type="text" required value={custName} onChange={e=>setCustName(e.target.value)} class="w-full bg-zinc-950 p-2.5 text-white border border-zinc-800 rounded-xl" /></div>
-                <div><label class="text-zinc-400">Phone *</label><input type="text" required value={custPhone} onChange={e=>setCustPhone(e.target.value)} class="w-full bg-zinc-950 p-2.5 text-white border border-zinc-800 rounded-xl" /></div>
-              </div>
-              <button type="submit" class="bg-amber-500 text-black font-bold px-6 py-3 rounded-xl text-xs">Save Order</button>
-            </form>
           )}
         </div>
       );
     }
 
-    // --- HOLISTIC PRODUCT CRUD WITH DYNAMIC BRANDS, CUSTOM CATEGORIES & MULTI-IMAGE THUMBNAILS ---
+    // --- HOLISTIC PRODUCT CRUD WITH LOCAL FILE UPLOADER ---
     function OmsHolisticProductsTab({ products, saveProductsState, brandsList, categoriesList, addDynamicBrand, addDynamicCategory, onEditRow, onAdjustStock }) {
       const [showAddModal, setShowAddModal] = useState(false);
       const [newProdName, setNewProdName] = useState('');
@@ -1290,20 +1353,22 @@
       const [newProdMrp, setNewProdMrp] = useState(1500);
       const [newProdStock, setNewProdStock] = useState(30);
 
-      // Multi-Image Gallery State
+      // Multi-Image Gallery
       const [galleryUrls, setGalleryUrls] = useState([PRESET_FABRIC_IMAGES[0].url]);
 
-      const handleAddImageThumbnail = () => {
-        setGalleryUrls([...galleryUrls, PRESET_FABRIC_IMAGES[galleryUrls.length % PRESET_FABRIC_IMAGES.length].url]);
+      const handleFileUpload = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          setGalleryUrls([...galleryUrls, evt.target.result]);
+        };
+        reader.readAsDataURL(file);
       };
 
       const handleRemoveImageThumbnail = (idx) => {
-        if (galleryUrls.length <= 1) return alert("Must keep at least 1 image!");
+        if (galleryUrls.length <= 1) return alert("Product must keep at least 1 photo!");
         setGalleryUrls(galleryUrls.filter((_, i) => i !== idx));
-      };
-
-      const handleUpdateImageUrl = (idx, newUrl) => {
-        setGalleryUrls(galleryUrls.map((url, i) => i === idx ? newUrl : url));
       };
 
       const handleAddProduct = (e) => {
@@ -1336,9 +1401,8 @@
           imageUrl: galleryUrls[0] || PRESET_FABRIC_IMAGES[0].url,
           galleryImages: galleryUrls,
           isActive: true,
-          description: 'New fabric inventory item.'
+          description: 'New fabric stock item.'
         };
-
         saveProductsState([created, ...products]);
         setShowAddModal(false);
       };
@@ -1354,150 +1418,131 @@
       };
 
       const deleteProductRow = (productId) => {
-        if (confirm("Archive this inventory row?")) saveProductsState(products.filter(p => p.id !== productId));
+        if (confirm("Archive this fabric item?")) saveProductsState(products.filter(p => p.id !== productId));
       };
 
       return (
         <div class="space-y-6">
           <div class="flex justify-between items-center">
             <div>
-              <h3 class="font-heading font-bold text-xl text-white">Holistic Inventory Row Management</h3>
-              <p class="text-xs text-zinc-400">Dynamic Brands, Custom Categories & Multi-Image Gallery Manager</p>
+              <h3 class="font-heading font-bold text-lg text-slate-900">Inventory Master (With Local File Uploader)</h3>
+              <p class="text-xs text-slate-500">Pick image files from device or paste image URLs directly.</p>
             </div>
-            <button onClick={() => setShowAddModal(true)} class="bg-amber-500 text-black font-bold px-4 py-2.5 rounded-xl text-xs shadow">
+            <button onClick={() => setShowAddModal(true)} class="bg-myntra-pink text-white font-bold px-4 py-2 rounded-xl text-xs shadow-xs">
               + Add New Fabric Item
             </button>
           </div>
 
           {/* ADD PRODUCT MODAL */}
           {showAddModal && (
-            <form onSubmit={handleAddProduct} class="bg-zinc-900 border border-zinc-700 rounded-3xl p-6 space-y-4 max-w-2xl mx-auto shadow-2xl">
-              <div class="flex justify-between border-b border-zinc-800 pb-3">
-                <h4 class="font-heading font-bold text-lg text-white">Add New Fabric Inventory Row</h4>
-                <button type="button" onClick={() => setShowAddModal(false)} class="text-zinc-400">✕</button>
+            <form onSubmit={handleAddProduct} class="bg-white border border-slate-200 rounded-3xl p-6 space-y-4 max-w-2xl mx-auto shadow-xl">
+              <div class="flex justify-between border-b pb-3">
+                <h4 class="font-heading font-bold text-lg text-slate-900">Add Fabric Item</h4>
+                <button type="button" onClick={() => setShowAddModal(false)} class="text-slate-400">✕</button>
               </div>
 
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                 <div class="sm:col-span-2">
-                  <label class="text-zinc-400">Fabric Name *</label>
-                  <input type="text" required value={newProdName} onChange={e=>setNewProdName(e.target.value)} class="w-full bg-zinc-950 p-2.5 text-white border border-zinc-800 rounded-xl font-bold" />
+                  <label class="text-slate-600 font-semibold">Fabric Name *</label>
+                  <input type="text" required value={newProdName} onChange={e=>setNewProdName(e.target.value)} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-bold" />
                 </div>
 
-                {/* DYNAMIC BRAND CREATOR */}
                 <div>
-                  <label class="text-zinc-400">Brand</label>
+                  <label class="text-slate-600 font-semibold">Brand</label>
                   {!isAddingBrand ? (
                     <div class="flex space-x-1.5 mt-1">
-                      <select value={newProdBrand} onChange={e=>setNewProdBrand(e.target.value)} class="flex-1 bg-zinc-950 text-white border border-zinc-800 rounded-xl p-2.5">
+                      <select value={newProdBrand} onChange={e=>setNewProdBrand(e.target.value)} class="flex-1 bg-slate-50 border border-slate-300 rounded-xl p-2">
                         {brandsList.map(b=><option key={b} value={b}>{b}</option>)}
                       </select>
-                      <button type="button" onClick={() => setIsAddingBrand(true)} class="bg-amber-500/20 text-amber-400 border border-amber-500/30 px-2 py-1 rounded-xl text-xs font-bold">
-                        + New
-                      </button>
+                      <button type="button" onClick={() => setIsAddingBrand(true)} class="bg-pink-100 text-myntra-pink px-2 py-1 rounded-lg text-xs font-bold">+ New</button>
                     </div>
                   ) : (
                     <div class="flex space-x-1.5 mt-1">
-                      <input type="text" placeholder="Type Brand..." value={customBrandInput} onChange={e=>setCustomBrandInput(e.target.value)} class="flex-1 bg-zinc-950 text-white border border-zinc-800 rounded-xl p-2 font-bold" />
-                      <button type="button" onClick={() => setIsAddingBrand(false)} class="text-xs text-zinc-500">Cancel</button>
+                      <input type="text" placeholder="Type Brand..." value={customBrandInput} onChange={e=>setCustomBrandInput(e.target.value)} class="flex-1 bg-slate-50 border border-slate-300 rounded-xl p-2 font-bold" />
+                      <button type="button" onClick={() => setIsAddingBrand(false)} class="text-xs text-slate-400">Cancel</button>
                     </div>
                   )}
                 </div>
 
-                {/* DYNAMIC CATEGORY CREATOR */}
                 <div>
-                  <label class="text-zinc-400">Category</label>
+                  <label class="text-slate-600 font-semibold">Category</label>
                   {!isAddingCategory ? (
                     <div class="flex space-x-1.5 mt-1">
-                      <select value={newProdCategory} onChange={e=>setNewProdCategory(e.target.value)} class="flex-1 bg-zinc-950 text-white border border-zinc-800 rounded-xl p-2.5">
+                      <select value={newProdCategory} onChange={e=>setNewProdCategory(e.target.value)} class="flex-1 bg-slate-50 border border-slate-300 rounded-xl p-2">
                         {categoriesList.map(c=><option key={c} value={c}>{c}</option>)}
                       </select>
-                      <button type="button" onClick={() => setIsAddingCategory(true)} class="bg-amber-500/20 text-amber-400 border border-amber-500/30 px-2 py-1 rounded-xl text-xs font-bold">
-                        + New
-                      </button>
+                      <button type="button" onClick={() => setIsAddingCategory(true)} class="bg-pink-100 text-myntra-pink px-2 py-1 rounded-lg text-xs font-bold">+ Custom</button>
                     </div>
                   ) : (
                     <div class="flex space-x-1.5 mt-1">
-                      <input type="text" placeholder="e.g. Suit Piece..." value={customCategoryInput} onChange={e=>setCustomCategoryInput(e.target.value)} class="flex-1 bg-zinc-950 text-white border border-zinc-800 rounded-xl p-2 font-bold" />
-                      <button type="button" onClick={() => setIsAddingCategory(false)} class="text-xs text-zinc-500">Cancel</button>
+                      <input type="text" placeholder="e.g. Suit Piece..." value={customCategoryInput} onChange={e=>setCustomCategoryInput(e.target.value)} class="flex-1 bg-slate-50 border border-slate-300 rounded-xl p-2 font-bold" />
+                      <button type="button" onClick={() => setIsAddingCategory(false)} class="text-xs text-slate-400">Cancel</button>
                     </div>
                   )}
                 </div>
 
-                <div><label class="text-zinc-400">Selling Price (₹)</label><input type="number" required value={newProdPrice} onChange={e=>setNewProdPrice(e.target.value)} class="w-full bg-zinc-950 p-2.5 text-white border border-zinc-800 rounded-xl font-bold" /></div>
-                <div><label class="text-zinc-400">MRP Price (₹)</label><input type="number" value={newProdMrp} onChange={e=>setNewProdMrp(e.target.value)} class="w-full bg-zinc-950 p-2.5 text-white border border-zinc-800 rounded-xl" /></div>
-                <div><label class="text-zinc-400">Initial Stock</label><input type="number" value={newProdStock} onChange={e=>setNewProdStock(e.target.value)} class="w-full bg-zinc-950 p-2.5 text-white border border-zinc-800 rounded-xl" /></div>
+                <div><label class="text-slate-600 font-semibold">Selling Price (₹)</label><input type="number" required value={newProdPrice} onChange={e=>setNewProdPrice(e.target.value)} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-bold" /></div>
+                <div><label class="text-slate-600 font-semibold">MRP Price (₹)</label><input type="number" value={newProdMrp} onChange={e=>setNewProdMrp(e.target.value)} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5" /></div>
 
-                {/* MULTI-IMAGE THUMBNAIL MANAGER */}
-                <div class="sm:col-span-2 space-y-3 border-t border-zinc-800 pt-3">
-                  <div class="flex justify-between items-center">
-                    <label class="text-amber-400 font-bold">Product Image Gallery Manager</label>
-                    <button type="button" onClick={handleAddImageThumbnail} class="bg-zinc-800 text-amber-400 text-xs px-2.5 py-1 rounded-lg border border-zinc-700">
-                      + Add Gallery Photo
-                    </button>
+                {/* LOCAL PHOTO FILE UPLOADER */}
+                <div class="sm:col-span-2 space-y-2 border-t pt-3">
+                  <label class="text-myntra-pink font-bold">Photo Upload & Gallery Manager</label>
+                  <div class="flex items-center space-x-2">
+                    <input type="file" accept="image/*" onChange={handleFileUpload} class="text-xs text-slate-600" />
                   </div>
 
-                  <div class="space-y-2">
-                    {galleryUrls.map((url, idx) => (
-                      <div key={idx} class="flex space-x-2 items-center">
-                        <img src={url} class="w-9 h-9 rounded-lg object-cover border border-zinc-700 shrink-0" />
-                        <input type="text" value={url} onChange={e => handleUpdateImageUrl(idx, e.target.value)} class="flex-1 bg-zinc-950 p-2 text-white border border-zinc-800 rounded-xl font-mono text-[11px]" />
-                        <button type="button" onClick={() => handleRemoveImageThumbnail(idx)} class="bg-red-950 text-red-400 font-bold px-2.5 py-1 rounded-lg border border-red-800">
-                          ✕
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div class="text-[10px] text-zinc-500">Preset Gallery Quick Pick:</div>
                   <div class="flex space-x-2 overflow-x-auto pb-1 custom-scrollbar">
-                    {PRESET_FABRIC_IMAGES.map((preset, i) => (
-                      <img key={i} src={preset.url} onClick={() => setGalleryUrls([preset.url])} class="w-10 h-10 rounded-lg object-cover cursor-pointer border border-zinc-700" title={preset.name} />
+                    {galleryUrls.map((url, idx) => (
+                      <div key={idx} class="relative group">
+                        <img src={url} class="w-12 h-12 rounded-lg object-cover border border-slate-300" />
+                        <button type="button" onClick={() => handleRemoveImageThumbnail(idx)} class="absolute -top-1 -right-1 bg-red-600 text-white rounded-full w-4 h-4 text-[9px] flex items-center justify-center font-bold">✕</button>
+                      </div>
                     ))}
                   </div>
                 </div>
               </div>
 
-              <div class="flex justify-end space-x-2 pt-2 border-t border-zinc-800">
-                <button type="button" onClick={() => setShowAddModal(false)} class="px-4 py-2 bg-zinc-800 text-xs text-zinc-300 rounded-xl">Cancel</button>
-                <button type="submit" class="px-6 py-2 bg-amber-500 text-black font-bold text-xs rounded-xl shadow">Save Fabric Item</button>
+              <div class="flex justify-end space-x-2 pt-2 border-t">
+                <button type="button" onClick={() => setShowAddModal(false)} class="px-4 py-2 bg-slate-100 text-xs text-slate-700 rounded-xl">Cancel</button>
+                <button type="submit" class="px-6 py-2 bg-myntra-pink text-white font-bold text-xs rounded-xl shadow-xs">Save Fabric Item</button>
               </div>
             </form>
           )}
 
           {/* TABLE */}
-          <div class="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-x-auto">
+          <div class="bg-white border border-slate-200 rounded-2xl overflow-x-auto shadow-xs">
             <table class="w-full text-left text-xs">
-              <thead class="bg-zinc-950 text-zinc-400 font-semibold uppercase border-b border-zinc-800">
+              <thead class="bg-slate-100 text-slate-600 font-semibold uppercase border-b">
                 <tr>
                   <th class="p-3">Photo</th>
                   <th class="p-3">Item / SKU</th>
                   <th class="p-3">Brand & Category</th>
                   <th class="p-3">Price</th>
-                  <th class="p-3">Stock Level</th>
+                  <th class="p-3">Stock</th>
                   <th class="p-3">Visibility</th>
                   <th class="p-3 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-zinc-800 text-zinc-300">
+              <tbody class="divide-y text-slate-800">
                 {products.map(p => (
-                  <tr key={p.id} class={`hover:bg-zinc-850 ${!p.isActive ? 'opacity-50 bg-zinc-950/50' : ''}`}>
-                    <td class="p-2.5"><img src={p.imageUrl} class="w-10 h-10 rounded-lg object-cover border border-zinc-800" /></td>
-                    <td class="p-3 font-bold text-white">{p.name}<div class="text-[10px] text-zinc-500 font-mono">SKU: {p.sku}</div></td>
-                    <td class="p-3"><span class="text-amber-400 font-semibold">{p.brand}</span><div class="text-[10px] text-zinc-500">{p.category}</div></td>
-                    <td class="p-3 font-bold text-white">₹{p.sellingPrice}</td>
+                  <tr key={p.id} class={`hover:bg-slate-50 ${!p.isActive ? 'opacity-50' : ''}`}>
+                    <td class="p-2.5"><img src={p.imageUrl} class="w-10 h-10 rounded-lg object-cover border" /></td>
+                    <td class="p-3 font-bold text-slate-900">{p.name}<div class="text-[10px] text-slate-400 font-mono">SKU: {p.sku}</div></td>
+                    <td class="p-3"><span class="font-bold text-myntra-pink">{p.brand}</span><div class="text-[10px] text-slate-500">{p.category}</div></td>
+                    <td class="p-3 font-bold text-slate-900">₹{p.sellingPrice}</td>
                     <td class="p-3">
                       <span class="font-bold">{p.currentStock} {p.unit}</span>
-                      <button onClick={() => onAdjustStock(p)} class="ml-2 text-[10px] bg-zinc-800 border border-zinc-700 px-1.5 py-0.5 rounded">+/-</button>
+                      <button onClick={() => onAdjustStock(p)} class="ml-2 text-[10px] bg-slate-100 border px-1.5 py-0.5 rounded">+/-</button>
                     </td>
                     <td class="p-3">
-                      <button onClick={() => toggleProductActive(p.id)} class={`px-2.5 py-1 rounded text-[10px] font-bold ${p.isActive ? 'bg-emerald-950 text-emerald-400 border border-emerald-800' : 'bg-zinc-800 text-zinc-400'}`}>
+                      <button onClick={() => toggleProductActive(p.id)} class={`px-2.5 py-1 rounded text-[10px] font-bold ${p.isActive ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-500'}`}>
                         {p.isActive ? '👁️ Visible' : '🙈 Hidden'}
                       </button>
                     </td>
                     <td class="p-3 text-right space-x-1">
-                      <button onClick={() => onEditRow(p)} class="bg-zinc-800 text-amber-400 px-2 py-1 rounded text-[10px]">✏️ Edit</button>
-                      <button onClick={() => duplicateProductRow(p)} class="bg-zinc-800 text-zinc-300 px-2 py-1 rounded text-[10px]">📋 Clone</button>
-                      <button onClick={() => deleteProductRow(p.id)} class="bg-red-950 text-red-400 px-2 py-1 rounded text-[10px]">🗑️</button>
+                      <button onClick={() => onEditRow(p)} class="bg-slate-100 text-slate-900 px-2 py-1 rounded text-[10px] font-semibold">✏️ Edit</button>
+                      <button onClick={() => duplicateProductRow(p)} class="bg-slate-100 text-slate-700 px-2 py-1 rounded text-[10px]">📋 Clone</button>
+                      <button onClick={() => deleteProductRow(p.id)} class="bg-red-50 text-red-600 px-2 py-1 rounded text-[10px]">🗑️</button>
                     </td>
                   </tr>
                 ))}
@@ -1508,139 +1553,74 @@
       );
     }
 
-    // --- HOLISTIC EDIT MODAL (WITH MULTI-IMAGE THUMBNAIL MANAGER) ---
+    // --- HOLISTIC EDIT MODAL ---
     function EditProductModal({ product, brandsList, categoriesList, addDynamicBrand, addDynamicCategory, onClose, onSave }) {
       const [form, setForm] = useState({ ...product });
       const [galleryUrls, setGalleryUrls] = useState(
         product.galleryImages && product.galleryImages.length > 0 ? product.galleryImages : [product.imageUrl]
       );
-      const [newCustomBrand, setNewCustomBrand] = useState('');
-      const [isAddingBrand, setIsAddingBrand] = useState(false);
-      const [newCustomCat, setNewCustomCat] = useState('');
-      const [isAddingCat, setIsAddingCat] = useState(false);
 
-      const handleAddImageThumbnail = () => {
-        setGalleryUrls([...galleryUrls, PRESET_FABRIC_IMAGES[galleryUrls.length % PRESET_FABRIC_IMAGES.length].url]);
+      const handleFileUpload = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          setGalleryUrls([...galleryUrls, evt.target.result]);
+        };
+        reader.readAsDataURL(file);
       };
 
       const handleRemoveImageThumbnail = (idx) => {
-        if (galleryUrls.length <= 1) return alert("Product must retain at least 1 image!");
+        if (galleryUrls.length <= 1) return alert("Must retain 1 image!");
         setGalleryUrls(galleryUrls.filter((_, i) => i !== idx));
       };
 
-      const handleUpdateImageUrl = (idx, newUrl) => {
-        setGalleryUrls(galleryUrls.map((url, i) => i === idx ? newUrl : url));
-      };
-
-      const handleSave = (e) => {
-        e.preventDefault();
-        let targetBrand = form.brand;
-        if (isAddingBrand && newCustomBrand.trim()) {
-          targetBrand = newCustomBrand.trim();
-          addDynamicBrand(targetBrand);
-        }
-
-        let targetCat = form.category;
-        if (isAddingCat && newCustomCat.trim()) {
-          targetCat = newCustomCat.trim();
-          addDynamicCategory(targetCat);
-        }
-
-        onSave({ 
-          ...form, 
-          brand: targetBrand, 
-          category: targetCat, 
-          imageUrl: galleryUrls[0], 
-          galleryImages: galleryUrls 
-        });
-      };
-
       return (
-        <div class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <form onSubmit={handleSave} class="bg-zinc-900 border border-zinc-700 rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
-            <div class="flex justify-between items-center border-b border-zinc-800 pb-3">
-              <h3 class="font-heading font-bold text-lg text-white">Edit Inventory Item & Gallery</h3>
-              <button type="button" onClick={onClose} class="text-zinc-400">✕</button>
+        <div class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <form onSubmit={(e)=>{ e.preventDefault(); onSave({ ...form, imageUrl: galleryUrls[0], galleryImages: galleryUrls }); }} class="bg-white border border-slate-200 rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
+            <div class="flex justify-between items-center border-b pb-3">
+              <h3 class="font-heading font-bold text-lg text-slate-900">Edit Inventory Row & Photos</h3>
+              <button type="button" onClick={onClose} class="text-slate-400">✕</button>
             </div>
 
             <div class="grid grid-cols-2 gap-3 text-xs">
               <div class="col-span-2">
-                <label class="text-zinc-400">Product Name</label>
-                <input type="text" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} class="w-full bg-zinc-950 p-2.5 text-white border border-zinc-800 rounded-xl font-bold" />
+                <label class="text-slate-600 font-semibold">Product Name</label>
+                <input type="text" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2 font-bold" />
               </div>
+              <div><label class="text-slate-600 font-semibold">Selling Price (₹)</label><input type="number" value={form.sellingPrice} onChange={e => setForm({ ...form, sellingPrice: Number(e.target.value) })} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2 font-bold" /></div>
+              <div><label class="text-slate-600 font-semibold">Stock Quantity</label><input type="number" value={form.currentStock} onChange={e => setForm({ ...form, currentStock: Number(e.target.value) })} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2" /></div>
 
-              <div>
-                <label class="text-zinc-400">Brand</label>
-                {!isAddingBrand ? (
-                  <div class="flex space-x-1 mt-1">
-                    <select value={form.brand} onChange={e => setForm({ ...form, brand: e.target.value })} class="flex-1 bg-zinc-950 text-white border border-zinc-800 rounded-xl p-2">
-                      {brandsList.map(b=><option key={b} value={b}>{b}</option>)}
-                    </select>
-                    <button type="button" onClick={() => setIsAddingBrand(true)} class="bg-amber-500/20 text-amber-400 text-[10px] font-bold px-2 rounded-lg">+ Custom</button>
-                  </div>
-                ) : (
-                  <div class="flex space-x-1 mt-1">
-                    <input type="text" placeholder="Custom Brand..." value={newCustomBrand} onChange={e => setNewCustomBrand(e.target.value)} class="flex-1 bg-zinc-950 text-white border border-zinc-800 rounded-xl p-2 font-bold" />
-                    <button type="button" onClick={() => setIsAddingBrand(false)} class="text-xs text-zinc-500">Cancel</button>
-                  </div>
-                )}
-              </div>
-
-              <div>
-                <label class="text-zinc-400">Category</label>
-                {!isAddingCat ? (
-                  <div class="flex space-x-1 mt-1">
-                    <select value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} class="flex-1 bg-zinc-950 text-white border border-zinc-800 rounded-xl p-2">
-                      {categoriesList.map(c=><option key={c} value={c}>{c}</option>)}
-                    </select>
-                    <button type="button" onClick={() => setIsAddingCat(true)} class="bg-amber-500/20 text-amber-400 text-[10px] font-bold px-2 rounded-lg">+ Custom</button>
-                  </div>
-                ) : (
-                  <div class="flex space-x-1 mt-1">
-                    <input type="text" placeholder="e.g. Suit Piece..." value={newCustomCat} onChange={e => setNewCustomCat(e.target.value)} class="flex-1 bg-zinc-950 text-white border border-zinc-800 rounded-xl p-2 font-bold" />
-                    <button type="button" onClick={() => setIsAddingCat(false)} class="text-xs text-zinc-500">Cancel</button>
-                  </div>
-                )}
-              </div>
-
-              <div><label class="text-zinc-400">Selling Price (₹)</label><input type="number" value={form.sellingPrice} onChange={e => setForm({ ...form, sellingPrice: Number(e.target.value) })} class="w-full bg-zinc-950 p-2.5 text-white border border-zinc-800 rounded-xl font-bold" /></div>
-              <div><label class="text-zinc-400">MRP Price (₹)</label><input type="number" value={form.mrpPrice || ''} onChange={e => setForm({ ...form, mrpPrice: Number(e.target.value) })} class="w-full bg-zinc-950 p-2.5 text-white border border-zinc-800 rounded-xl" /></div>
-
-              {/* MULTI-IMAGE THUMBNAIL MANAGER */}
-              <div class="col-span-2 space-y-3 border-t border-zinc-800 pt-3">
-                <div class="flex justify-between items-center">
-                  <label class="text-amber-400 font-bold">Multi-Image Thumbnails (Upload / Edit / Remove)</label>
-                  <button type="button" onClick={handleAddImageThumbnail} class="bg-zinc-800 text-amber-400 text-xs px-2.5 py-1 rounded-lg border border-zinc-700">
-                    + Add Photo
-                  </button>
-                </div>
-
-                <div class="space-y-2">
+              <div class="col-span-2 space-y-2 border-t pt-3">
+                <label class="text-myntra-pink font-bold">Local File Photo Picker & Gallery Manager</label>
+                <input type="file" accept="image/*" onChange={handleFileUpload} class="text-xs" />
+                <div class="flex space-x-2 overflow-x-auto pb-1 custom-scrollbar">
                   {galleryUrls.map((url, idx) => (
-                    <div key={idx} class="flex space-x-2 items-center">
-                      <img src={url} class="w-9 h-9 rounded-lg object-cover border border-zinc-700 shrink-0" />
-                      <input type="text" value={url} onChange={e => handleUpdateImageUrl(idx, e.target.value)} class="flex-1 bg-zinc-950 p-2 text-white border border-zinc-800 rounded-xl font-mono text-[11px]" />
-                      <button type="button" onClick={() => handleRemoveImageThumbnail(idx)} class="bg-red-950 text-red-400 font-bold px-2.5 py-1 rounded-lg border border-red-800">
-                        ✕
-                      </button>
+                    <div key={idx} class="relative">
+                      <img src={url} class="w-12 h-12 rounded-lg object-cover border" />
+                      <button type="button" onClick={() => handleRemoveImageThumbnail(idx)} class="absolute -top-1 -right-1 bg-red-600 text-white rounded-full w-4 h-4 text-[9px] flex items-center justify-center font-bold">✕</button>
                     </div>
                   ))}
                 </div>
               </div>
             </div>
 
-            <div class="flex justify-end space-x-2 pt-2 border-t border-zinc-800">
-              <button type="button" onClick={onClose} class="px-4 py-2 bg-zinc-800 text-xs text-zinc-300 rounded-xl">Cancel</button>
-              <button type="submit" class="px-6 py-2 bg-amber-500 text-black font-bold text-xs rounded-xl shadow">Save Changes</button>
+            <div class="flex justify-end space-x-2 pt-2 border-t">
+              <button type="button" onClick={onClose} class="px-4 py-2 bg-slate-100 text-xs text-slate-700 rounded-xl">Cancel</button>
+              <button type="submit" class="px-5 py-2 bg-myntra-pink text-white font-bold text-xs rounded-xl shadow-xs">Save Changes</button>
             </div>
           </form>
         </div>
       );
     }
 
-    function OmsWebsiteCustomizerTab({ storeSettings, saveSettingsState }) {
+    // --- EXHAUSTIVE DIY WEBSITE CUSTOMIZER & MULTI-ADMIN USERS ---
+    function OmsWebsiteCustomizerTab({ storeSettings, saveSettingsState, adminUsers, saveAdminUsersState }) {
       const [formData, setFormData] = useState(storeSettings);
       const [savedToast, setSavedToast] = useState(false);
+      const [newAdminEmail, setNewAdminEmail] = useState('');
+      const [newAdminPass, setNewAdminPass] = useState('');
+      const [newAdminRole, setNewAdminRole] = useState('Staff Admin');
 
       const handleSubmit = (e) => {
         e.preventDefault();
@@ -1649,19 +1629,66 @@
         setTimeout(() => setSavedToast(false), 2000);
       };
 
+      const handleAddAdminUser = (e) => {
+        e.preventDefault();
+        if (!newAdminEmail || !newAdminPass) return;
+        const created = {
+          id: `admin-${adminUsers.length + 1}`,
+          email: newAdminEmail,
+          password: newAdminPass,
+          role: newAdminRole,
+          name: newAdminEmail.split('@')[0]
+        };
+        saveAdminUsersState([...adminUsers, created]);
+        setNewAdminEmail('');
+        setNewAdminPass('');
+      };
+
       return (
-        <form onSubmit={handleSubmit} class="max-w-2xl mx-auto bg-zinc-900 border border-zinc-800 rounded-3xl p-6 space-y-4">
-          <div class="flex justify-between border-b border-zinc-800 pb-3">
-            <h3 class="font-heading font-bold text-xl text-white">DIY Website Customizer</h3>
-            {savedToast && <span class="text-xs bg-emerald-950 text-emerald-400 px-3 py-1 rounded-full">Saved ✓</span>}
+        <div class="space-y-6 max-w-3xl mx-auto">
+          <form onSubmit={handleSubmit} class="bg-white border border-slate-200 rounded-3xl p-6 space-y-4 shadow-xs">
+            <div class="flex justify-between border-b pb-3">
+              <h3 class="font-heading font-extrabold text-lg text-slate-900">Exhaustive DIY Website Customizer</h3>
+              {savedToast && <span class="text-xs bg-emerald-100 text-emerald-800 font-bold px-3 py-1 rounded-full">Saved ✓</span>}
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+              <div><label class="text-slate-600 font-semibold">Store Title</label><input type="text" value={formData.storeName} onChange={e=>setFormData({...formData, storeName:e.target.value})} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-bold" /></div>
+              <div><label class="text-slate-600 font-semibold">WhatsApp Business Phone</label><input type="text" value={formData.whatsappPhone} onChange={e=>setFormData({...formData, whatsappPhone:e.target.value})} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-mono" /></div>
+              <div class="sm:col-span-2"><label class="text-slate-600 font-semibold">Tagline</label><input type="text" value={formData.tagline} onChange={e=>setFormData({...formData, tagline:e.target.value})} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5" /></div>
+              <div class="sm:col-span-2"><label class="text-slate-600 font-semibold">Announcement Bar Banner</label><input type="text" value={formData.announcementBar} onChange={e=>setFormData({...formData, announcementBar:e.target.value})} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5" /></div>
+              <div><label class="text-slate-600 font-semibold">Hero Headline</label><input type="text" value={formData.heroTitle} onChange={e=>setFormData({...formData, heroTitle:e.target.value})} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5" /></div>
+              <div><label class="text-slate-600 font-semibold">Admin Security PIN</label><input type="text" value={formData.adminPin} onChange={e=>setFormData({...formData, adminPin:e.target.value})} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-mono font-bold" /></div>
+            </div>
+
+            <button type="submit" class="w-full bg-myntra-pink text-white font-bold py-3 rounded-xl text-xs shadow-xs">Save Store Customizations</button>
+          </form>
+
+          {/* MASTER & MULTI-ADMIN USER MANAGEMENT */}
+          <div class="bg-white border border-slate-200 rounded-3xl p-6 space-y-4 shadow-xs">
+            <h3 class="font-heading font-extrabold text-lg text-slate-900">Multi-Admin User Management</h3>
+            <div class="space-y-2 text-xs">
+              {adminUsers.map(u => (
+                <div key={u.id} class="flex justify-between items-center bg-slate-50 p-3 rounded-xl border border-slate-200">
+                  <div>
+                    <span class="font-bold text-slate-900">{u.name}</span> <span class="text-slate-500">({u.email})</span>
+                    <div class="text-[10px] text-slate-400">Role: {u.role} | Saved Credentials: Non-Hashed ({u.password})</div>
+                  </div>
+                  <span class="bg-pink-50 text-myntra-pink border border-pink-200 font-bold px-2.5 py-1 rounded-lg text-[10px]">{u.role}</span>
+                </div>
+              ))}
+            </div>
+
+            <form onSubmit={handleAddAdminUser} class="space-y-3 pt-3 border-t text-xs">
+              <h4 class="font-bold text-slate-900">Create New Staff Admin Account</h4>
+              <div class="grid grid-cols-2 gap-2">
+                <input type="email" placeholder="Gmail / Staff Email..." required value={newAdminEmail} onChange={e=>setNewAdminEmail(e.target.value)} class="bg-slate-50 p-2.5 border rounded-xl" />
+                <input type="text" placeholder="Password (Saved Non-Hashed)..." required value={newAdminPass} onChange={e=>setNewAdminPass(e.target.value)} class="bg-slate-50 p-2.5 border rounded-xl font-mono" />
+              </div>
+              <button type="submit" class="bg-slate-900 text-white font-bold px-4 py-2 rounded-xl text-xs shadow-xs">+ Add Staff Admin User</button>
+            </form>
           </div>
-          <div class="space-y-3 text-xs">
-            <div><label class="text-zinc-400">Store Header Title</label><input type="text" value={formData.storeName} onChange={e=>setFormData({...formData, storeName:e.target.value})} class="w-full bg-zinc-950 p-2.5 text-white border border-zinc-800 rounded-xl font-bold" /></div>
-            <div><label class="text-zinc-400">Announcement Bar Text</label><input type="text" value={formData.announcementBar} onChange={e=>setFormData({...formData, announcementBar:e.target.value})} class="w-full bg-zinc-950 p-2.5 text-white border border-zinc-800 rounded-xl" /></div>
-            <div><label class="text-zinc-400">WhatsApp Phone Number</label><input type="text" value={formData.whatsappPhone} onChange={e=>setFormData({...formData, whatsappPhone:e.target.value})} class="w-full bg-zinc-950 p-2.5 text-white border border-zinc-800 rounded-xl font-mono" /></div>
-          </div>
-          <button type="submit" class="w-full bg-amber-500 text-black font-bold py-3 rounded-xl text-xs">Save Store Customizations</button>
-        </form>
+        </div>
       );
     }
 
@@ -1698,13 +1725,13 @@
       };
 
       return (
-        <div class="space-y-4 bg-zinc-900 border border-zinc-800 p-6 rounded-3xl">
-          <h3 class="font-heading font-bold text-xl text-white">Google Sheet CSV Import & Smart Deduplication</h3>
+        <div class="space-y-4 bg-white border border-slate-200 p-6 rounded-3xl">
+          <h3 class="font-heading font-bold text-lg text-slate-900">Google Sheet CSV Import & Smart Deduplication</h3>
           <input type="file" accept=".csv" onChange={(e)=>{ const f=e.target.files[0]; if(f){ const r=new FileReader(); r.onload=evt=>handleParseCsvText(evt.target.result); r.readAsText(f); }}} class="text-xs" />
           {parsedDiff && (
             <div class="space-y-2 pt-2">
-              <div class="text-xs font-bold text-emerald-400">Parsed {parsedDiff.newItems.length} new unique orders.</div>
-              <button onClick={() => { saveOrdersState([...parsedDiff.newItems, ...orders]); setParsedDiff(null); alert("Synced to OMS!"); }} class="bg-emerald-600 text-white font-bold px-4 py-2 rounded-xl text-xs">Confirm Sync</button>
+              <div class="text-xs font-bold text-emerald-700">Parsed {parsedDiff.newItems.length} new unique orders.</div>
+              <button onClick={() => { saveOrdersState([...parsedDiff.newItems, ...orders]); setParsedDiff(null); alert("Synced!"); }} class="bg-emerald-600 text-white font-bold px-4 py-2 rounded-xl text-xs">Confirm Sync</button>
             </div>
           )}
         </div>
@@ -1725,18 +1752,18 @@
 
       return (
         <div class="space-y-6">
-          <h3 class="font-heading font-bold text-xl text-white">YouTube Video Revenue Attribution</h3>
+          <h3 class="font-heading font-bold text-xl text-slate-900">YouTube Video Revenue Attribution</h3>
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {videoStats.map(stat => (
-              <div key={stat.video} class="bg-zinc-900 border border-zinc-800 p-5 rounded-2xl space-y-3">
-                <div class="flex items-center space-x-2 text-red-400 font-heading font-bold">
+              <div key={stat.video} class="bg-white border border-slate-200 p-5 rounded-2xl space-y-3 shadow-xs">
+                <div class="flex items-center space-x-2 text-red-600 font-heading font-bold">
                   <span>▶️</span><span>{stat.video}</span>
                 </div>
-                <div class="flex justify-between text-xs pt-2 border-t border-zinc-800">
-                  <span class="text-zinc-400">Orders:</span><span class="font-bold text-white">{stat.count}</span>
+                <div class="flex justify-between text-xs pt-2 border-t border-slate-100">
+                  <span class="text-slate-500">Orders:</span><span class="font-bold text-slate-900">{stat.count}</span>
                 </div>
                 <div class="flex justify-between text-xs">
-                  <span class="text-zinc-400">Revenue:</span><span class="text-xl font-extrabold text-amber-400 font-heading">₹{stat.revenue.toLocaleString()}</span>
+                  <span class="text-slate-500">Revenue:</span><span class="text-xl font-extrabold text-slate-900 font-heading">₹{stat.revenue.toLocaleString()}</span>
                 </div>
               </div>
             ))}
@@ -1745,55 +1772,22 @@
       );
     }
 
-    function OrderDetailModal({ order, onClose, onUpdateStatus }) {
-      return (
-        <div class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex justify-end">
-          <div class="bg-zinc-900 border-l border-zinc-800 max-w-md w-full h-full p-6 space-y-6 overflow-y-auto custom-scrollbar">
-            <div class="flex items-center justify-between border-b border-zinc-800 pb-4">
-              <div>
-                <span class="text-xs text-amber-400 font-bold font-heading">{order.id}</span>
-                <h3 class="font-heading font-bold text-xl text-white">{order.customer.name}</h3>
-              </div>
-              <button onClick={onClose} class="text-zinc-400 hover:text-white text-xl">✕</button>
-            </div>
-            <div class="space-y-4 text-xs">
-              <div class="bg-zinc-950 p-4 rounded-xl space-y-2 border border-zinc-800">
-                <div class="text-zinc-400 font-semibold uppercase">Customer Details</div>
-                <div class="text-white font-medium">📞 {order.customer.phone}</div>
-                <div class="text-zinc-300">📍 {order.customer.address}</div>
-              </div>
-              <div class="space-y-2 pt-2">
-                <label class="text-zinc-400 font-semibold uppercase">Update Lifecycle Status:</label>
-                <div class="grid grid-cols-2 gap-2">
-                  {['CONFIRMED', 'PROCESSING', 'READY_TO_DISPATCH', 'DISPATCHED', 'DELIVERED'].map(st => (
-                    <button key={st} onClick={() => onUpdateStatus(order.id, st)} class={`p-2 rounded-lg text-center font-bold text-[10px] border transition ${order.orderStatus === st ? 'bg-amber-500 text-black border-amber-400' : 'bg-zinc-800 text-zinc-300'}`}>
-                      {st.replace(/_/g, ' ')}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      );
-    }
-
     function StockAdjustModal({ product, onClose, onAdjust }) {
       const [delta, setDelta] = useState(5);
       return (
-        <div class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div class="bg-zinc-900 border border-zinc-700 rounded-3xl max-w-sm w-full p-6 space-y-4 shadow-2xl">
-            <h3 class="font-heading font-bold text-lg text-white">Adjust Stock Level</h3>
+        <div class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div class="bg-white border border-slate-200 rounded-3xl max-w-sm w-full p-6 space-y-4 shadow-xl">
+            <h3 class="font-heading font-bold text-lg text-slate-900">Adjust Stock Level</h3>
             <div class="flex items-center space-x-3 justify-center py-2">
-              <button onClick={() => setDelta(d => d - 1)} class="w-10 h-10 bg-zinc-800 text-amber-400 font-bold text-lg rounded-xl">-</button>
-              <input type="number" value={delta} onChange={e => setDelta(Number(e.target.value))} class="w-20 bg-zinc-950 p-2.5 text-center font-bold text-white border border-zinc-800 rounded-xl" />
-              <button onClick={() => setDelta(d => d + 1)} class="w-10 h-10 bg-zinc-800 text-amber-400 font-bold text-lg rounded-xl">+</button>
+              <button onClick={() => setDelta(d => d - 1)} class="w-10 h-10 bg-slate-100 font-bold text-lg rounded-xl text-slate-900">-</button>
+              <input type="number" value={delta} onChange={e => setDelta(Number(e.target.value))} class="w-20 bg-slate-50 border rounded-xl p-2.5 text-center font-bold text-slate-900" />
+              <button onClick={() => setDelta(d => d + 1)} class="w-10 h-10 bg-slate-100 font-bold text-lg rounded-xl text-slate-900">+</button>
             </div>
             <div class="flex space-x-2">
-              <button onClick={() => onAdjust(product.id, -Math.abs(delta))} class="flex-1 bg-red-950 text-red-400 font-bold py-2.5 rounded-xl text-xs border border-red-800">- Remove {delta}</button>
-              <button onClick={() => onAdjust(product.id, Math.abs(delta))} class="flex-1 bg-emerald-950 text-emerald-400 font-bold py-2.5 rounded-xl text-xs border border-emerald-800">+ Add {delta}</button>
+              <button onClick={() => onAdjust(product.id, -Math.abs(delta))} class="flex-1 bg-red-100 text-red-700 font-bold py-2 rounded-xl text-xs">- Remove {delta}</button>
+              <button onClick={() => onAdjust(product.id, Math.abs(delta))} class="flex-1 bg-emerald-100 text-emerald-800 font-bold py-2 rounded-xl text-xs">+ Add {delta}</button>
             </div>
-            <button onClick={onClose} class="w-full bg-zinc-800 text-zinc-400 py-2 rounded-xl text-xs font-medium">Cancel</button>
+            <button onClick={onClose} class="w-full text-xs text-slate-400 py-1 font-medium">Cancel</button>
           </div>
         </div>
       );
