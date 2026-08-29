@@ -1009,57 +1009,119 @@
     }
 
     function CartDrawer({ cart, storeSettings, updateCartQty, onClose, onClearCart }) {
+      const [step, setStep] = useState('cart'); // 'cart' | 'checkout'
+      const [custName, setCustName] = useState('');
+      const [custPhone, setCustPhone] = useState('');
+      const [custAddress, setCustAddress] = useState('');
+      const [custPincode, setCustPincode] = useState('');
+      const [paymentMode, setPaymentMode] = useState('UPI');
+      const [orderNotes, setOrderNotes] = useState('');
+
       const totalAmount = cart.reduce((sum, item) => sum + (item.product.sellingPrice * item.qty), 0);
+      const siteBase = 'https://atishjn.github.io/humjoly-store-online';
 
       const generateCombinedWhatsapp = () => {
-        let msg = `Hi Humjoly Tailors, I would like to order the following fabrics:\n\n`;
+        let msg = `Hi Humjoly Tailors! 🙏 I want to place an order.\n\n`;
+        msg += `👤 *Name*: ${custName}\n📞 *Phone*: ${custPhone}\n📍 *Address*: ${custAddress}, Pincode: ${custPincode}\n💳 *Payment*: ${paymentMode}\n\n`;
+        msg += `*Order Items:*\n`;
         cart.forEach((item, idx) => {
-          msg += `${idx + 1}. *${item.product.name}*\n   📏 Qty: ${item.qty} ${item.product.unit}\n   💵 Price: ₹${item.product.sellingPrice * item.qty}\n`;
+          const productUrl = `${siteBase}/?sku=${item.product.sku}`;
+          msg += `${idx + 1}. *${item.product.name}*\n   SKU: ${item.product.sku}\n   📏 Qty: ${item.qty} ${item.product.unit}\n   💵 ₹${item.product.sellingPrice * item.qty}\n   🔗 ${productUrl}\n`;
         });
-        msg += `\n💰 *Total Order Value*: ₹${totalAmount}\n\nPlease confirm availability and payment details.`;
+        msg += `\n💰 *Total*: ₹${totalAmount}`;
+        if (orderNotes) msg += `\n📝 *Notes*: ${orderNotes}`;
+        msg += `\n\nPlease confirm availability. Thank you!`;
         return `https://wa.me/${storeSettings.whatsappPhone}?text=${encodeURIComponent(msg)}`;
       };
 
       return (
         <div class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex justify-end">
-          <div class="bg-white border-l border-slate-200 max-w-md w-full h-full p-6 flex flex-col justify-between shadow-2xl">
-            <div class="space-y-4">
-              <div class="flex items-center justify-between border-b border-slate-200 pb-4">
-                <h3 class="font-heading font-bold text-lg text-slate-900">Your Cart ({cart.reduce((s,i)=>s+i.qty,0)})</h3>
-                <button onClick={onClose} class="text-slate-400 hover:text-slate-900 text-lg">✕</button>
-              </div>
+          <div class="bg-white border-l border-slate-200 max-w-md w-full h-full flex flex-col shadow-2xl">
 
-              {cart.length === 0 ? (
-                <div class="text-center py-12 text-slate-400 text-xs">Your cart is empty.</div>
+            {/* HEADER */}
+            <div class="flex items-center justify-between border-b border-slate-200 px-6 py-4 shrink-0">
+              <div class="flex items-center space-x-3">
+                {step === 'checkout' && (
+                  <button onClick={() => setStep('cart')} class="text-slate-400 hover:text-slate-900 text-sm">←</button>
+                )}
+                <h3 class="font-heading font-bold text-lg text-slate-900">
+                  {step === 'cart' ? `Your Cart (${cart.reduce((s,i)=>s+i.qty,0)})` : '📋 Order Details'}
+                </h3>
+              </div>
+              <button onClick={onClose} class="text-slate-400 hover:text-slate-900 text-lg">✕</button>
+            </div>
+
+            {/* STEP INDICATOR */}
+            <div class="flex border-b border-slate-100 text-[10px] font-bold">
+              <div class={`flex-1 py-2 text-center ${step === 'cart' ? 'text-myntra-pink border-b-2 border-myntra-pink' : 'text-slate-400'}`}>1. CART REVIEW</div>
+              <div class={`flex-1 py-2 text-center ${step === 'checkout' ? 'text-myntra-pink border-b-2 border-myntra-pink' : 'text-slate-400'}`}>2. YOUR DETAILS</div>
+            </div>
+
+            {/* SCROLL BODY */}
+            <div class="flex-1 overflow-y-auto custom-scrollbar px-6 py-4">
+              {step === 'cart' ? (
+                <div class="space-y-3">
+                  {cart.length === 0 ? (
+                    <div class="text-center py-12 text-slate-400 text-xs">Your cart is empty.</div>
+                  ) : (
+                    cart.map((item) => (
+                      <div key={item.product.id} class="bg-slate-50 p-3 rounded-2xl border border-slate-200 flex space-x-3 items-center justify-between">
+                        <img src={item.product.imageUrl} class="w-14 h-14 rounded-xl object-cover" />
+                        <div class="flex-1 min-w-0">
+                          <h4 class="font-heading font-bold text-xs text-slate-900 truncate">{item.product.name}</h4>
+                          <div class="text-[10px] text-slate-400 font-mono">{item.product.sku}</div>
+                          <div class="text-xs text-myntra-pink font-semibold mt-0.5">₹{item.product.sellingPrice} / {item.product.unit}</div>
+                        </div>
+                        <div class="flex items-center space-x-2 bg-white px-2 py-1 rounded-lg border border-slate-200">
+                          <button onClick={() => updateCartQty(item.product.id, item.qty - 1)} class="text-slate-900 font-bold px-1 text-xs">-</button>
+                          <span class="text-xs font-bold text-slate-900 w-4 text-center">{item.qty}</span>
+                          <button onClick={() => updateCartQty(item.product.id, item.qty + 1)} class="text-slate-900 font-bold px-1 text-xs">+</button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
               ) : (
-                <div class="space-y-3 max-h-[60vh] overflow-y-auto custom-scrollbar pr-1">
-                  {cart.map((item) => (
-                    <div key={item.product.id} class="bg-slate-50 p-3 rounded-2xl border border-slate-200 flex space-x-3 items-center justify-between">
-                      <img src={item.product.imageUrl} class="w-14 h-14 rounded-xl object-cover" />
-                      <div class="flex-1 min-w-0">
-                        <h4 class="font-heading font-bold text-xs text-slate-900 truncate">{item.product.name}</h4>
-                        <div class="text-xs text-myntra-pink font-semibold mt-0.5">₹{item.product.sellingPrice} / {item.product.unit}</div>
-                      </div>
-                      <div class="flex items-center space-x-2 bg-white px-2 py-1 rounded-lg border border-slate-200">
-                        <button onClick={() => updateCartQty(item.product.id, item.qty - 1)} class="text-slate-900 font-bold px-1 text-xs">-</button>
-                        <span class="text-xs font-bold text-slate-900 w-4 text-center">{item.qty}</span>
-                        <button onClick={() => updateCartQty(item.product.id, item.qty + 1)} class="text-slate-900 font-bold px-1 text-xs">+</button>
-                      </div>
+                <div class="space-y-3 text-xs">
+                  <p class="text-slate-500">Fill in your details. These will be sent along with your order on WhatsApp.</p>
+                  <div><label class="text-slate-700 font-semibold">Full Name *</label><input type="text" required value={custName} onChange={e=>setCustName(e.target.value)} placeholder="e.g. Ramesh Kumar" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-bold mt-1" /></div>
+                  <div><label class="text-slate-700 font-semibold">Phone Number *</label><input type="tel" required value={custPhone} onChange={e=>setCustPhone(e.target.value)} placeholder="e.g. 9885612345" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-mono mt-1" /></div>
+                  <div><label class="text-slate-700 font-semibold">Delivery Address *</label><textarea required value={custAddress} onChange={e=>setCustAddress(e.target.value)} placeholder="House No, Street, Colony, City, State" rows={2} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 mt-1 resize-none" /></div>
+                  <div><label class="text-slate-700 font-semibold">Pincode *</label><input type="text" required maxLength={6} value={custPincode} onChange={e=>setCustPincode(e.target.value)} placeholder="e.g. 500001" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-mono mt-1" /></div>
+                  <div>
+                    <label class="text-slate-700 font-semibold">Payment Option</label>
+                    <div class="flex space-x-2 mt-1">
+                      {['UPI', 'COD', 'Bank Transfer'].map(opt => (
+                        <button key={opt} type="button" onClick={()=>setPaymentMode(opt)} class={`flex-1 py-2 rounded-xl text-[11px] font-bold border transition ${paymentMode===opt ? 'bg-myntra-pink text-white border-transparent' : 'bg-slate-50 text-slate-600 border-slate-300'}`}>{opt}</button>
+                      ))}
                     </div>
-                  ))}
+                  </div>
+                  <div><label class="text-slate-700 font-semibold">Order Notes (optional)</label><input type="text" value={orderNotes} onChange={e=>setOrderNotes(e.target.value)} placeholder="Any special instructions?" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 mt-1" /></div>
                 </div>
               )}
             </div>
 
+            {/* FOOTER */}
             {cart.length > 0 && (
-              <div class="space-y-3 border-t border-slate-200 pt-4">
+              <div class="border-t border-slate-200 px-6 py-4 space-y-3 shrink-0">
                 <div class="flex justify-between items-baseline">
                   <span class="text-xs text-slate-500 font-medium">Total Order Value:</span>
                   <span class="text-xl font-extrabold text-slate-900 font-heading">₹{totalAmount}</span>
                 </div>
-                <a href={generateCombinedWhatsapp()} target="_blank" rel="noreferrer" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 rounded-xl text-center block text-xs shadow-xs">
-                  Send Combined Order on WhatsApp 🚀
-                </a>
+                {step === 'cart' ? (
+                  <button onClick={() => setStep('checkout')} class="w-full bg-myntra-pink hover:bg-myntra-pinkHover text-white font-bold py-3.5 rounded-xl text-xs shadow-xs">
+                    Proceed to Order Details →
+                  </button>
+                ) : (
+                  <a
+                    href={custName && custPhone && custAddress && custPincode ? generateCombinedWhatsapp() : '#'}
+                    onClick={e => { if (!custName || !custPhone || !custAddress || !custPincode) { e.preventDefault(); alert('Please fill in all required fields!'); } }}
+                    target="_blank" rel="noreferrer"
+                    class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 rounded-xl text-center block text-xs shadow-xs"
+                  >
+                    Send Order on WhatsApp 🚀
+                  </a>
+                )}
               </div>
             )}
           </div>
@@ -1068,26 +1130,56 @@
     }
 
     function WhatsAppModal({ product, qty, setQty, storeSettings, onClose }) {
+      const [custName, setCustName] = useState('');
+      const [custPhone, setCustPhone] = useState('');
+      const [custAddress, setCustAddress] = useState('');
       const totalPrice = product.sellingPrice * qty;
-      const whatsappText = `Hi Humjoly Tailors, I want to order:\n\n🧵 *Product*: ${product.name}\n🔖 *SKU*: ${product.sku}\n📏 *Quantity*: ${qty} ${product.unit}\n💵 *Total Price*: ₹${totalPrice}\n\nPlease confirm availability.`;
-      const whatsappUrl = `https://wa.me/${storeSettings.whatsappPhone}?text=${encodeURIComponent(whatsappText)}`;
+      const siteBase = 'https://atishjn.github.io/humjoly-store-online';
+      const productUrl = `${siteBase}/?sku=${product.sku}`;
+
+      const buildWhatsappUrl = () => {
+        let msg = `Hi Humjoly Tailors! 🙏 I want to order:\n\n`;
+        msg += `👤 *Name*: ${custName}\n📞 *Phone*: ${custPhone}\n`;
+        if (custAddress) msg += `📍 *Address*: ${custAddress}\n`;
+        msg += `\n🧵 *Product*: ${product.name}\n🔖 *SKU*: ${product.sku}\n📏 *Qty*: ${qty} ${product.unit}\n💵 *Total*: ₹${totalPrice}\n🔗 *Product Link*: ${productUrl}\n\nPlease confirm availability. Thank you!`;
+        return `https://wa.me/${storeSettings.whatsappPhone}?text=${encodeURIComponent(msg)}`;
+      };
 
       return (
         <div class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div class="bg-white border border-slate-200 rounded-3xl max-w-md w-full p-6 space-y-5 shadow-2xl">
+          <div class="bg-white border border-slate-200 rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl">
             <div class="flex justify-between border-b border-slate-200 pb-3">
-              <h3 class="font-heading font-bold text-lg text-slate-900">Quick WhatsApp Order</h3>
+              <h3 class="font-heading font-bold text-lg text-slate-900">💬 Quick WhatsApp Order</h3>
               <button onClick={onClose} class="text-slate-400">✕</button>
             </div>
-            <div class="flex space-x-3 bg-slate-50 p-3 rounded-2xl border border-slate-200">
+
+            <div class="flex space-x-3 bg-slate-50 p-3 rounded-2xl border border-slate-200 items-center">
               <img src={product.imageUrl} class="w-14 h-14 rounded-xl object-cover" />
-              <div>
+              <div class="flex-1">
                 <h4 class="font-heading font-bold text-xs text-slate-900">{product.name}</h4>
-                <p class="text-xs text-myntra-pink font-semibold mt-1">₹{product.sellingPrice} / {product.unit}</p>
+                <p class="text-xs text-myntra-pink font-semibold mt-0.5">₹{product.sellingPrice} / {product.unit}</p>
+                <div class="flex items-center space-x-2 mt-1.5">
+                  <button onClick={() => setQty(Math.max(1, qty - 1))} class="w-6 h-6 bg-slate-200 rounded-lg text-xs font-bold">-</button>
+                  <span class="text-xs font-bold text-slate-900 w-5 text-center">{qty}</span>
+                  <button onClick={() => setQty(qty + 1)} class="w-6 h-6 bg-slate-200 rounded-lg text-xs font-bold">+</button>
+                  <span class="text-xs text-slate-500">=  ₹{totalPrice}</span>
+                </div>
               </div>
             </div>
-            <a href={whatsappUrl} target="_blank" rel="noreferrer" class="w-full bg-emerald-600 text-white font-bold py-3.5 rounded-xl text-center block text-xs shadow-xs">
-              Send Message on WhatsApp 🚀
+
+            <div class="space-y-2 text-xs">
+              <div><label class="text-slate-700 font-semibold">Your Name *</label><input type="text" value={custName} onChange={e=>setCustName(e.target.value)} placeholder="Full Name" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-bold mt-1" /></div>
+              <div><label class="text-slate-700 font-semibold">Phone Number *</label><input type="tel" value={custPhone} onChange={e=>setCustPhone(e.target.value)} placeholder="10-digit Mobile Number" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-mono mt-1" /></div>
+              <div><label class="text-slate-700 font-semibold">Delivery Address (optional)</label><input type="text" value={custAddress} onChange={e=>setCustAddress(e.target.value)} placeholder="City, State" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 mt-1" /></div>
+            </div>
+
+            <a
+              href={custName && custPhone ? buildWhatsappUrl() : '#'}
+              onClick={e => { if (!custName || !custPhone) { e.preventDefault(); alert('Please enter your Name and Phone number!'); } }}
+              target="_blank" rel="noreferrer"
+              class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 rounded-xl text-center block text-xs shadow-xs"
+            >
+              Send Order on WhatsApp 🚀
             </a>
           </div>
         </div>
