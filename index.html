@@ -97,8 +97,34 @@
       { name: 'D&J Unstitched Gift Combo', url: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=600&auto=format&fit=crop&q=80' }
     ];
 
+    const INITIAL_VIDEOS = ['Video no 18', 'Video no 13', 'Video no 14', 'Video no 15', 'Video no 16', 'Video no 17', 'Video no 11', 'Video no 19', 'Video no 20'];
+
     // --- INITIAL FABRIC PRODUCTS ---
     const INITIAL_PRODUCTS = [
+      {
+        id: 'prod-soktas-giza-white',
+        sku: 'SOK-GIZA-80S-WHT',
+        name: 'Shirt Fabric Soktas 80s Giza Cotton Plain Colour White',
+        brand: 'Soktas',
+        category: 'Shirting',
+        fabricType: '80s Giza Cotton Plain 100% Cotton (Aditya Birla)',
+        mrpPrice: 1950,
+        sellingPrice: 1450,
+        costPrice: 950,
+        unit: 'Meters',
+        currentStock: 45,
+        lowStockThreshold: 10,
+        featuredInVideos: ['Video no 18', 'Video no 19'],
+        videoCodes: ['Video no 18', 'Video no 19'],
+        sequenceInVideo: 'Item #1',
+        imageUrl: 'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=600&auto=format&fit=crop&q=80',
+        galleryImages: [
+          'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=600&auto=format&fit=crop&q=80',
+          'https://images.unsplash.com/photo-1598033129183-c4f50c736f10?w=600&auto=format&fit=crop&q=80'
+        ],
+        isActive: true,
+        description: 'Authentic Soktas 80s Giza Cotton Plain White Shirt Fabric by Aditya Birla. Ultra-fine 100% Egyptian Giza Cotton weave for pristine luxury formal shirting.'
+      },
       {
         id: 'prod-1',
         sku: 'HT-SOK-101',
@@ -113,6 +139,7 @@
         currentStock: 42,
         lowStockThreshold: 10,
         featuredInVideos: ['Video no 13', 'Video no 18'],
+        videoCodes: ['Video no 13', 'Video no 18'],
         sequenceInVideo: 'Item #1',
         imageUrl: 'https://images.unsplash.com/photo-1598033129183-c4f50c736f10?w=600&auto=format&fit=crop&q=80',
         galleryImages: [
@@ -289,6 +316,7 @@
       const [storeSettings, setStoreSettings] = useState(DEFAULT_STORE_SETTINGS);
       const [brandsList, setBrandsList] = useState(INITIAL_BRANDS);
       const [categoriesList, setCategoriesList] = useState(INITIAL_CATEGORIES);
+      const [videosList, setVideosList] = useState(INITIAL_VIDEOS);
 
       const [activeTab, setActiveTab] = useState('orders');
       const [cart, setCart] = useState([]);
@@ -300,11 +328,13 @@
       const [selectedBrand, setSelectedBrand] = useState('ALL');
       const [searchQuery, setSearchQuery] = useState('');
 
-      // PDP & CRUD Modals
+      // PDP, Order & CRUD Modals
       const [selectedPdpProduct, setSelectedPdpProduct] = useState(null);
       const [whatsappModalProduct, setWhatsappModalProduct] = useState(null);
       const [orderQtyModal, setOrderQtyModal] = useState(1);
       const [selectedOrderForDrawer, setSelectedOrderForDrawer] = useState(null);
+      const [editingOrder, setEditingOrder] = useState(null);
+      const [deletingOrderId, setDeletingOrderId] = useState(null);
       const [editingProductRow, setEditingProductRow] = useState(null);
       const [stockAdjustProduct, setStockAdjustProduct] = useState(null);
 
@@ -314,6 +344,7 @@
         const savedSettings = localStorage.getItem('ht_settings');
         const savedBrands = localStorage.getItem('ht_brands');
         const savedCats = localStorage.getItem('ht_categories');
+        const savedVids = localStorage.getItem('ht_videos');
         const savedUsers = localStorage.getItem('ht_admin_users');
         const savedCart = localStorage.getItem('ht_cart');
 
@@ -322,6 +353,7 @@
         if (savedSettings) setStoreSettings(JSON.parse(savedSettings));
         if (savedBrands) setBrandsList(JSON.parse(savedBrands));
         if (savedCats) setCategoriesList(JSON.parse(savedCats));
+        if (savedVids) setVideosList(JSON.parse(savedVids));
         if (savedUsers) setAdminUsers(JSON.parse(savedUsers));
         if (savedCart) setCart(JSON.parse(savedCart));
       }, []);
@@ -421,6 +453,29 @@
         }
       };
 
+      const addDynamicVideo = (newVid) => {
+        if (newVid && !videosList.includes(newVid)) {
+          const updated = [...videosList, newVid];
+          setVideosList(updated);
+          localStorage.setItem('ht_videos', JSON.stringify(updated));
+        }
+      };
+
+      const deleteDynamicVideo = (vidToDelete) => {
+        const updated = videosList.filter(v => v !== vidToDelete);
+        setVideosList(updated);
+        localStorage.setItem('ht_videos', JSON.stringify(updated));
+      };
+
+      const handleDeleteOrder = (orderId) => {
+        const updated = orders.filter(o => o.id !== orderId);
+        saveOrdersState(updated);
+        if (selectedOrderForDrawer && selectedOrderForDrawer.id === orderId) {
+          setSelectedOrderForDrawer(null);
+        }
+        setDeletingOrderId(null);
+      };
+
       const addToCart = (product, qty = 1) => {
         const existingIndex = cart.findIndex(item => item.product.id === product.id);
         let updated = [];
@@ -509,7 +564,12 @@
       const filteredProducts = useMemo(() => {
         return products.filter(p => {
           if (!p.isActive) return false;
-          if (catalogViewFilterMode === 'VIDEO' && selectedVideo !== 'ALL' && !p.featuredInVideos.includes(selectedVideo)) return false;
+          if (catalogViewFilterMode === 'VIDEO' && selectedVideo !== 'ALL') {
+            const matchVid = (p.videoCodes && p.videoCodes.includes(selectedVideo)) || 
+                             (p.featuredInVideos && p.featuredInVideos.includes(selectedVideo)) || 
+                             p.videoCode === selectedVideo;
+            if (!matchVid) return false;
+          }
           if (selectedCategory !== 'ALL' && p.category !== selectedCategory) return false;
           if (selectedBrand !== 'ALL' && p.brand !== selectedBrand) return false;
           if (searchQuery) {
@@ -621,6 +681,7 @@
                 window.history.pushState({ modal: 'whatsapp' }, '', '#order');
               }}
               onOpenAdminModal={() => setShowAdminLoginModal(true)}
+              videosList={videosList}
             />
           ) : (
             <OmsView 
@@ -634,8 +695,11 @@
               saveSettingsState={saveSettingsState}
               brandsList={brandsList}
               categoriesList={categoriesList}
+              videosList={videosList}
               addDynamicBrand={addDynamicBrand}
               addDynamicCategory={addDynamicCategory}
+              addDynamicVideo={addDynamicVideo}
+              deleteDynamicVideo={deleteDynamicVideo}
               adminUsers={adminUsers}
               saveAdminUsersState={saveAdminUsersState}
               currentLoggedInUser={currentLoggedInUser}
@@ -644,6 +708,8 @@
               readyToDispatchCount={readyToDispatchCount}
               lowStockCount={lowStockCount}
               setSelectedOrderForDrawer={setSelectedOrderForDrawer}
+              setEditingOrder={setEditingOrder}
+              setDeletingOrderId={setDeletingOrderId}
               setEditingProductRow={setEditingProductRow}
               setStockAdjustProduct={setStockAdjustProduct}
             />
@@ -754,14 +820,59 @@
             />
           )}
 
+          {/* ORDER DETAILS DRAWER */}
+          {selectedOrderForDrawer && (
+            <OrderDetailsDrawer 
+              order={selectedOrderForDrawer}
+              onClose={() => setSelectedOrderForDrawer(null)}
+              onEdit={(order) => { setSelectedOrderForDrawer(null); setEditingOrder(order); }}
+              onDelete={(orderId) => setDeletingOrderId(orderId)}
+              onUpdateStatus={(updatedOrder) => {
+                const updated = orders.map(o => o.id === updatedOrder.id ? updatedOrder : o);
+                saveOrdersState(updated);
+                setSelectedOrderForDrawer(updatedOrder);
+              }}
+            />
+          )}
+
+          {/* EDIT ORDER MODAL */}
+          {editingOrder && (
+            <EditOrderModal 
+              order={editingOrder}
+              onClose={() => setEditingOrder(null)}
+              onSave={(updatedOrder) => {
+                const updated = orders.map(o => o.id === updatedOrder.id ? updatedOrder : o);
+                saveOrdersState(updated);
+                setEditingOrder(null);
+              }}
+            />
+          )}
+
+          {/* CONFIRM DELETE ORDER MODAL */}
+          {deletingOrderId && (
+            <div class="fixed inset-0 z-60 bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-4">
+              <div class="bg-white border border-slate-200 rounded-3xl max-w-sm w-full p-6 space-y-4 shadow-2xl text-center">
+                <div class="w-12 h-12 rounded-2xl bg-red-100 mx-auto flex items-center justify-center text-red-600 text-2xl font-bold">🗑️</div>
+                <h3 class="font-heading font-extrabold text-lg text-slate-900">Delete Order Permanently?</h3>
+                <p class="text-xs text-slate-500">Are you sure you want to delete order <b>#{deletingOrderId}</b>? This action cannot be undone.</p>
+                <div class="flex space-x-2 pt-2">
+                  <button onClick={() => setDeletingOrderId(null)} class="flex-1 bg-slate-100 text-slate-700 font-bold py-2.5 rounded-xl text-xs">Cancel</button>
+                  <button onClick={() => handleDeleteOrder(deletingOrderId)} class="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 rounded-xl text-xs shadow-xs">Delete Order</button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* EDIT PRODUCT ROW MODAL */}
           {editingProductRow && (
             <EditProductModal 
               product={editingProductRow}
               brandsList={brandsList}
               categoriesList={categoriesList}
+              videosList={videosList}
               addDynamicBrand={addDynamicBrand}
               addDynamicCategory={addDynamicCategory}
+              addDynamicVideo={addDynamicVideo}
               onClose={() => setEditingProductRow(null)}
               onSave={(updatedProduct) => {
                 const updated = products.map(p => p.id === updatedProduct.id ? updatedProduct : p);
@@ -797,6 +908,7 @@
       storeSettings,
       brandsList,
       categoriesList,
+      videosList,
       catalogViewFilterMode,
       setCatalogViewFilterMode,
       selectedVideo, 
@@ -812,7 +924,7 @@
       onQuickWhatsapp,
       onOpenAdminModal
     }) {
-      const videoOptions = ['Video no 18', 'Video no 13', 'Video no 14', 'Video no 15', 'Video no 16', 'Video no 17', 'Video no 11'];
+      const videoOptions = videosList && videosList.length > 0 ? videosList : ['Video no 18', 'Video no 13', 'Video no 14', 'Video no 15', 'Video no 16', 'Video no 17', 'Video no 11'];
 
       return (
         <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
@@ -1482,8 +1594,11 @@
       saveSettingsState,
       brandsList,
       categoriesList,
+      videosList,
       addDynamicBrand,
       addDynamicCategory,
+      addDynamicVideo,
+      deleteDynamicVideo,
       adminUsers,
       saveAdminUsersState,
       currentLoggedInUser,
@@ -1492,6 +1607,8 @@
       readyToDispatchCount, 
       lowStockCount,
       setSelectedOrderForDrawer,
+      setEditingOrder,
+      setDeletingOrderId,
       setEditingProductRow,
       setStockAdjustProduct 
     }) {
@@ -1545,7 +1662,14 @@
           </div>
 
           {activeTab === 'orders' && (
-            <OmsOrdersTab orders={orders} saveOrdersState={saveOrdersState} onSelectOrder={setSelectedOrderForDrawer} onGoCreate={() => setActiveTab('create')} />
+            <OmsOrdersTab 
+              orders={orders} 
+              saveOrdersState={saveOrdersState} 
+              onSelectOrder={setSelectedOrderForDrawer} 
+              onEditOrder={setEditingOrder}
+              onDeleteOrder={setDeletingOrderId}
+              onGoCreate={() => setActiveTab('create')} 
+            />
           )}
 
           {activeTab === 'create' && (
@@ -1558,8 +1682,10 @@
               saveProductsState={saveProductsState} 
               brandsList={brandsList}
               categoriesList={categoriesList}
+              videosList={videosList}
               addDynamicBrand={addDynamicBrand}
               addDynamicCategory={addDynamicCategory}
+              addDynamicVideo={addDynamicVideo}
               onEditRow={setEditingProductRow} 
               onAdjustStock={setStockAdjustProduct} 
             />
@@ -1571,6 +1697,10 @@
               saveSettingsState={saveSettingsState}
               adminUsers={adminUsers}
               saveAdminUsersState={saveAdminUsersState}
+              videosList={videosList}
+              addDynamicVideo={addDynamicVideo}
+              deleteDynamicVideo={deleteDynamicVideo}
+              currentLoggedInUser={currentLoggedInUser}
             />
           )}
 
@@ -1585,38 +1715,254 @@
       );
     }
 
-    function OmsOrdersTab({ orders, saveOrdersState, onSelectOrder, onGoCreate }) {
+    function OmsOrdersTab({ orders, saveOrdersState, onSelectOrder, onEditOrder, onDeleteOrder, onGoCreate }) {
       return (
         <div class="space-y-4">
           <div class="flex justify-between items-center">
-            <h3 class="font-heading font-bold text-lg text-slate-900">Orders List</h3>
-            <button onClick={onGoCreate} class="bg-myntra-pink text-white font-bold px-4 py-2 rounded-xl text-xs shadow-xs">+ Create Order</button>
+            <h3 class="font-heading font-bold text-lg text-slate-900">Orders List ({orders.length})</h3>
+            <button onClick={onGoCreate} class="bg-myntra-pink hover:bg-myntra-pinkHover text-white font-bold px-4 py-2.5 rounded-xl text-xs shadow-xs transition">+ Create Order</button>
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {orders.map(order => (
-              <div key={order.id} onClick={() => onSelectOrder(order)} class="bg-white border border-slate-200 p-5 rounded-2xl cursor-pointer hover:border-slate-400 transition space-y-3 shadow-xs">
-                <div class="flex justify-between items-center">
-                  <span class="font-heading font-extrabold text-myntra-pink text-xs">{order.id}</span>
-                  <span class="text-[10px] font-bold uppercase bg-slate-100 px-2 py-0.5 rounded border border-slate-200">{order.orderStatus}</span>
+          {orders.length === 0 ? (
+            <div class="bg-white border border-slate-200 rounded-2xl p-12 text-center text-slate-500 text-xs">No orders recorded yet.</div>
+          ) : (
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {orders.map(order => (
+                <div key={order.id} class="bg-white border border-slate-200 p-5 rounded-2xl hover:border-slate-400 transition space-y-3 shadow-xs relative group flex flex-col justify-between">
+                  <div class="space-y-3 cursor-pointer" onClick={() => onSelectOrder(order)}>
+                    <div class="flex justify-between items-center">
+                      <span class="font-heading font-extrabold text-myntra-pink text-xs">{order.id}</span>
+                      <span class={`text-[10px] font-bold uppercase px-2 py-0.5 rounded border ${order.orderStatus === 'DELIVERED' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-100 text-slate-700 border-slate-200'}`}>
+                        {order.orderStatus || 'PENDING'}
+                      </span>
+                    </div>
+
+                    <div>
+                      <h4 class="font-heading font-bold text-slate-900 text-sm">{order.customer?.name || order.customerName}</h4>
+                      <p class="text-xs text-slate-500">📞 {order.customer?.phone || order.phoneNumber}</p>
+                      {order.customer?.address && <p class="text-[11px] text-slate-400 truncate">📍 {order.customer.address}</p>}
+                    </div>
+
+                    <div class="text-xs flex justify-between pt-2 border-t border-slate-100">
+                      <span class="text-slate-600 line-clamp-1 flex-1 pr-2">{order.fabricDescription}</span>
+                      <span class="font-bold text-slate-900">₹{order.totalAmount}</span>
+                    </div>
+                  </div>
+
+                  <div class="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                    <button onClick={() => onSelectOrder(order)} class="text-slate-600 font-semibold hover:text-slate-900 text-[11px]">👁️ Details</button>
+                    <div class="flex space-x-1.5">
+                      <button onClick={(e) => { e.stopPropagation(); onEditOrder(order); }} class="bg-slate-100 hover:bg-slate-200 text-slate-900 font-bold px-2.5 py-1 rounded-lg text-[11px] transition">
+                        ✏️ Edit
+                      </button>
+                      <button onClick={(e) => { e.stopPropagation(); onDeleteOrder(order.id); }} class="bg-red-50 hover:bg-red-100 text-red-600 font-bold px-2.5 py-1 rounded-lg text-[11px] transition">
+                        🗑️ Delete
+                      </button>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <h4 class="font-heading font-bold text-slate-900 text-sm">{order.customer.name}</h4>
-                  <p class="text-xs text-slate-500">📞 {order.customer.phone}</p>
-                </div>
-                <div class="text-xs flex justify-between pt-2 border-t border-slate-100">
-                  <span class="text-slate-500">{order.fabricDescription}</span>
-                  <span class="font-bold text-slate-900">₹{order.totalAmount}</span>
+              ))}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+
+    // --- ORDER DETAILS DRAWER ---
+    function OrderDetailsDrawer({ order, onClose, onEdit, onDelete, onUpdateStatus }) {
+      const STATUS_OPTIONS = ['PENDING', 'CONFIRMED', 'PROCESSING', 'READY_TO_DISPATCH', 'DISPATCHED', 'DELIVERED', 'CANCELLED'];
+      
+      return (
+        <div class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex justify-end">
+          <div class="bg-white w-full max-w-md h-full flex flex-col overflow-y-auto custom-scrollbar shadow-2xl">
+            <div class="sticky top-0 z-10 bg-white border-b border-slate-100 px-5 py-4 flex items-center justify-between">
+              <div>
+                <h3 class="font-heading font-extrabold text-lg text-slate-900">Order #{order.id}</h3>
+                <p class="text-xs text-slate-500">{order.date || 'N/A'}</p>
+              </div>
+              <button onClick={onClose} class="text-slate-400 hover:text-slate-900 text-xl font-bold">✕</button>
+            </div>
+
+            <div class="flex-1 p-5 space-y-5">
+              {/* Status Badge + Status Changer */}
+              <div class="flex items-center space-x-3">
+                <span class={`px-3 py-1.5 rounded-full text-xs font-bold uppercase ${order.orderStatus === 'DELIVERED' ? 'bg-emerald-100 text-emerald-800' : order.orderStatus === 'CANCELLED' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-800'}`}>
+                  {order.orderStatus || 'PENDING'}
+                </span>
+                <select 
+                  value={order.orderStatus || 'PENDING'}
+                  onChange={(e) => onUpdateStatus({ ...order, orderStatus: e.target.value })}
+                  class="flex-1 bg-slate-50 border border-slate-300 rounded-xl p-2 text-xs font-bold text-slate-700"
+                >
+                  {STATUS_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </div>
+
+              {/* Customer Info */}
+              <div class="bg-slate-50 rounded-2xl p-4 space-y-2">
+                <h4 class="font-bold text-slate-900 text-sm">👤 Customer Details</h4>
+                <p class="text-sm font-bold text-slate-900">{order.customer?.name || order.customerName || 'N/A'}</p>
+                <p class="text-xs text-slate-600">📞 {order.customer?.phone || order.phoneNumber || 'N/A'}</p>
+                {(order.customer?.address || order.address) && (
+                  <p class="text-xs text-slate-600">📍 {order.customer?.address || order.address}</p>
+                )}
+              </div>
+
+              {/* Order Info */}
+              <div class="bg-slate-50 rounded-2xl p-4 space-y-2">
+                <h4 class="font-bold text-slate-900 text-sm">📦 Order Details</h4>
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                  <div><span class="text-slate-500">Fabric Description:</span><p class="font-semibold text-slate-900">{order.fabricDescription}</p></div>
+                  <div><span class="text-slate-500">Quantity:</span><p class="font-semibold text-slate-900">{order.quantity || 'N/A'}</p></div>
+                  <div><span class="text-slate-500">Video Source:</span><p class="font-semibold text-slate-900">{order.videoAttribution || 'N/A'}</p></div>
+                  <div><span class="text-slate-500">Payment:</span><p class={`font-bold ${order.paymentStatus === 'PAID' ? 'text-emerald-700' : 'text-amber-600'}`}>{order.paymentStatus || 'PENDING'}</p></div>
                 </div>
               </div>
-            ))}
+
+              {/* Amount Info */}
+              <div class="bg-pink-50 border border-pink-100 rounded-2xl p-4 space-y-2">
+                <h4 class="font-bold text-slate-900 text-sm">💰 Payment Summary</h4>
+                <div class="flex justify-between text-sm"><span class="text-slate-600">Total Amount:</span><span class="font-extrabold text-slate-900">₹{order.totalAmount || 0}</span></div>
+                <div class="flex justify-between text-sm"><span class="text-slate-600">Amount Paid:</span><span class="font-bold text-emerald-700">₹{order.amountPaid || 0}</span></div>
+                <div class="flex justify-between text-sm border-t pt-2"><span class="text-slate-600">Balance Due:</span><span class={`font-extrabold ${(order.balanceAmount || 0) > 0 ? 'text-red-600' : 'text-emerald-700'}`}>₹{order.balanceAmount || 0}</span></div>
+              </div>
+
+              {/* Courier Tracking */}
+              {order.courierTracking && (
+                <div class="bg-slate-50 rounded-2xl p-4 space-y-1">
+                  <h4 class="font-bold text-slate-900 text-sm">🚚 Courier Tracking</h4>
+                  <p class="text-xs text-slate-600">{order.courierTracking}</p>
+                </div>
+              )}
+            </div>
+
+            <div class="sticky bottom-0 bg-white border-t border-slate-100 px-5 py-4 flex space-x-3">
+              <button onClick={() => onEdit(order)} class="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 rounded-xl text-xs shadow-xs">
+                ✏️ Edit Order
+              </button>
+              <button onClick={() => onDelete(order.id)} class="bg-red-50 hover:bg-red-100 text-red-600 font-bold py-3 px-5 rounded-xl text-xs border border-red-200">
+                🗑️ Delete
+              </button>
+            </div>
           </div>
+        </div>
+      );
+    }
+
+    // --- EDIT ORDER MODAL ---
+    function EditOrderModal({ order, onClose, onSave }) {
+      const [form, setForm] = useState({
+        ...order,
+        customerName: order.customer?.name || order.customerName || '',
+        customerPhone: order.customer?.phone || order.phoneNumber || '',
+        customerAddress: order.customer?.address || order.address || '',
+      });
+
+      const STATUS_OPTIONS = ['PENDING', 'CONFIRMED', 'PROCESSING', 'READY_TO_DISPATCH', 'DISPATCHED', 'DELIVERED', 'CANCELLED'];
+      const PAYMENT_STATUS_OPTIONS = ['PENDING', 'PARTIAL', 'PAID', 'REFUNDED'];
+
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        const totalAmount = Number(form.totalAmount) || 0;
+        const amountPaid = Number(form.amountPaid) || 0;
+        const balanceAmount = Math.max(0, totalAmount - amountPaid);
+
+        const updated = {
+          ...order,
+          ...form,
+          customer: {
+            ...order.customer,
+            name: form.customerName,
+            phone: form.customerPhone,
+            address: form.customerAddress
+          },
+          totalAmount,
+          amountPaid,
+          balanceAmount,
+          paymentStatus: form.paymentStatus
+        };
+        onSave(updated);
+      };
+
+      return (
+        <div class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto custom-scrollbar">
+          <form onSubmit={handleSubmit} class="bg-white border border-slate-200 rounded-3xl max-w-xl w-full p-6 space-y-4 shadow-2xl my-auto max-h-[90vh] overflow-y-auto custom-scrollbar">
+            <div class="flex justify-between items-center border-b pb-3">
+              <div>
+                <h3 class="font-heading font-extrabold text-lg text-slate-900">✏️ Edit Order</h3>
+                <p class="text-xs text-slate-500">Order ID: {order.id}</p>
+              </div>
+              <button type="button" onClick={onClose} class="text-slate-400 hover:text-slate-900 text-xl font-bold">✕</button>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+              <div class="sm:col-span-2">
+                <label class="text-slate-600 font-semibold">Customer Name *</label>
+                <input type="text" required value={form.customerName} onChange={e => setForm({...form, customerName: e.target.value})} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-bold" />
+              </div>
+              <div>
+                <label class="text-slate-600 font-semibold">Phone *</label>
+                <input type="text" required value={form.customerPhone} onChange={e => setForm({...form, customerPhone: e.target.value})} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-mono" />
+              </div>
+              <div>
+                <label class="text-slate-600 font-semibold">Date</label>
+                <input type="text" value={form.date || ''} onChange={e => setForm({...form, date: e.target.value})} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5" />
+              </div>
+              <div class="sm:col-span-2">
+                <label class="text-slate-600 font-semibold">Address</label>
+                <textarea value={form.customerAddress} onChange={e => setForm({...form, customerAddress: e.target.value})} rows={2} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 resize-none" />
+              </div>
+              <div class="sm:col-span-2">
+                <label class="text-slate-600 font-semibold">Fabric Description *</label>
+                <input type="text" required value={form.fabricDescription || ''} onChange={e => setForm({...form, fabricDescription: e.target.value})} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-bold" />
+              </div>
+              <div>
+                <label class="text-slate-600 font-semibold">Quantity</label>
+                <input type="text" value={form.quantity || ''} onChange={e => setForm({...form, quantity: e.target.value})} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5" />
+              </div>
+              <div>
+                <label class="text-slate-600 font-semibold">Video Attribution</label>
+                <input type="text" value={form.videoAttribution || ''} onChange={e => setForm({...form, videoAttribution: e.target.value})} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5" />
+              </div>
+              <div>
+                <label class="text-slate-600 font-semibold">Total Amount (₹) *</label>
+                <input type="number" required value={form.totalAmount || ''} onChange={e => setForm({...form, totalAmount: e.target.value})} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-bold" />
+              </div>
+              <div>
+                <label class="text-slate-600 font-semibold">Amount Paid (₹)</label>
+                <input type="number" value={form.amountPaid || ''} onChange={e => setForm({...form, amountPaid: e.target.value})} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-bold text-emerald-700" />
+              </div>
+              <div>
+                <label class="text-slate-600 font-semibold">Payment Status</label>
+                <select value={form.paymentStatus || 'PENDING'} onChange={e => setForm({...form, paymentStatus: e.target.value})} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-bold">
+                  {PAYMENT_STATUS_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </div>
+              <div>
+                <label class="text-slate-600 font-semibold">Order Status</label>
+                <select value={form.orderStatus || 'PENDING'} onChange={e => setForm({...form, orderStatus: e.target.value})} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-bold">
+                  {STATUS_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </div>
+              <div class="sm:col-span-2">
+                <label class="text-slate-600 font-semibold">Courier Tracking (Optional)</label>
+                <input type="text" value={form.courierTracking || ''} onChange={e => setForm({...form, courierTracking: e.target.value})} placeholder="e.g. Delhivery AWB 123456789" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5" />
+              </div>
+            </div>
+
+            <div class="flex justify-end space-x-3 border-t pt-4">
+              <button type="button" onClick={onClose} class="px-5 py-2.5 bg-slate-100 text-slate-700 font-bold text-xs rounded-xl">Cancel</button>
+              <button type="submit" class="px-6 py-2.5 bg-myntra-pink hover:bg-myntra-pinkHover text-white font-bold text-xs rounded-xl shadow-xs">Save Changes ✓</button>
+            </div>
+          </form>
         </div>
       );
     }
 
     // --- RENAMED & ENHANCED IMAGE-BASED ORDER CREATION FLOW (PRD 1) ---
     function OmsCreateOrderTab({ products, orders, saveOrdersState, onSuccess }) {
+
       const [entryType, setEntryType] = useState('image');
       const [aiScanning, setAiScanning] = useState(false);
       const [extractedDraft, setExtractedDraft] = useState(null);
@@ -1808,7 +2154,7 @@
     }
 
     // --- HOLISTIC PRODUCT CRUD ---
-    function OmsHolisticProductsTab({ products, saveProductsState, brandsList, categoriesList, addDynamicBrand, addDynamicCategory, onEditRow, onAdjustStock }) {
+    function OmsHolisticProductsTab({ products, saveProductsState, brandsList, categoriesList, videosList, addDynamicBrand, addDynamicCategory, addDynamicVideo, onEditRow, onAdjustStock }) {
       const [showAddModal, setShowAddModal] = useState(false);
       const [newProdName, setNewProdName] = useState('');
       const [newProdBrand, setNewProdBrand] = useState(brandsList[0] || 'Soktas');
@@ -2010,11 +2356,40 @@
       );
     }
 
-    function EditProductModal({ product, brandsList, categoriesList, addDynamicBrand, addDynamicCategory, onClose, onSave }) {
+    function EditProductModal({ product, brandsList, categoriesList, videosList, addDynamicBrand, addDynamicCategory, addDynamicVideo, onClose, onSave }) {
       const [form, setForm] = useState({ ...product });
+      const [selectedVideos, setSelectedVideos] = useState(
+        product.videoCodes || product.featuredInVideos || (product.videoCode ? [product.videoCode] : ['Video no 18'])
+      );
+      const [newVideoInput, setNewVideoInput] = useState('');
+      const [customBrandInput, setCustomBrandInput] = useState('');
+      const [isAddingBrand, setIsAddingBrand] = useState(false);
+      const [customCategoryInput, setCustomCategoryInput] = useState('');
+      const [isAddingCategory, setIsAddingCategory] = useState(false);
+      
       const [galleryUrls, setGalleryUrls] = useState(
         product.galleryImages && product.galleryImages.length > 0 ? product.galleryImages : [product.imageUrl]
       );
+      const [newGalleryUrlInput, setNewGalleryUrlInput] = useState('');
+
+      const toggleVideoSelection = (vid) => {
+        if (selectedVideos.includes(vid)) {
+          setSelectedVideos(selectedVideos.filter(v => v !== vid));
+        } else {
+          setSelectedVideos([...selectedVideos, vid]);
+        }
+      };
+
+      const handleAddNewVideoTag = () => {
+        if (newVideoInput.trim()) {
+          const tag = newVideoInput.trim();
+          if (addDynamicVideo) addDynamicVideo(tag);
+          if (!selectedVideos.includes(tag)) {
+            setSelectedVideos([...selectedVideos, tag]);
+          }
+          setNewVideoInput('');
+        }
+      };
 
       const handleFileUpload = (e) => {
         const file = e.target.files[0];
@@ -2024,58 +2399,200 @@
         reader.readAsDataURL(file);
       };
 
+      const handleAddUrlToGallery = () => {
+        if (newGalleryUrlInput.trim()) {
+          setGalleryUrls([...galleryUrls, newGalleryUrlInput.trim()]);
+          setNewGalleryUrlInput('');
+        }
+      };
+
       const handleRemoveImageThumbnail = (idx) => {
-        if (galleryUrls.length <= 1) return alert("Must keep 1 photo!");
+        if (galleryUrls.length <= 1) return alert("Product must keep at least 1 photo!");
         setGalleryUrls(galleryUrls.filter((_, i) => i !== idx));
       };
 
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        let targetBrand = form.brand;
+        if (isAddingBrand && customBrandInput.trim()) {
+          targetBrand = customBrandInput.trim();
+          if (addDynamicBrand) addDynamicBrand(targetBrand);
+        }
+
+        let targetCategory = form.category;
+        if (isAddingCategory && customCategoryInput.trim()) {
+          targetCategory = customCategoryInput.trim();
+          if (addDynamicCategory) addDynamicCategory(targetCategory);
+        }
+
+        const updated = {
+          ...form,
+          brand: targetBrand,
+          category: targetCategory,
+          videoCodes: selectedVideos,
+          featuredInVideos: selectedVideos,
+          imageUrl: galleryUrls[0] || form.imageUrl,
+          galleryImages: galleryUrls
+        };
+        onSave(updated);
+      };
+
       return (
-        <div class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <form onSubmit={(e)=>{ e.preventDefault(); onSave({ ...form, imageUrl: galleryUrls[0], galleryImages: galleryUrls }); }} class="bg-white border border-slate-200 rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
+        <div class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto custom-scrollbar">
+          <form onSubmit={handleSubmit} class="bg-white border border-slate-200 rounded-3xl max-w-xl w-full p-6 space-y-4 shadow-2xl my-auto max-h-[90vh] overflow-y-auto custom-scrollbar">
             <div class="flex justify-between items-center border-b pb-3">
-              <h3 class="font-heading font-bold text-lg text-slate-900">Edit Product Row</h3>
-              <button type="button" onClick={onClose} class="text-slate-400">✕</button>
+              <h3 class="font-heading font-extrabold text-lg text-slate-900">✏️ Edit Fabric Product</h3>
+              <button type="button" onClick={onClose} class="text-slate-400 hover:text-slate-900">✕</button>
             </div>
 
-            <div class="grid grid-cols-2 gap-3 text-xs">
-              <div class="col-span-2"><label class="text-slate-600 font-semibold">Product Name</label><input type="text" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2 font-bold" /></div>
-              <div><label class="text-slate-600 font-semibold">Selling Price (₹)</label><input type="number" value={form.sellingPrice} onChange={e => setForm({ ...form, sellingPrice: Number(e.target.value) })} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2 font-bold" /></div>
-              <div><label class="text-slate-600 font-semibold">Stock</label><input type="number" value={form.currentStock} onChange={e => setForm({ ...form, currentStock: Number(e.target.value) })} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2" /></div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+              <div class="sm:col-span-2"><label class="text-slate-600 font-semibold">Product Title *</label><input type="text" required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-bold" /></div>
 
-              <div class="col-span-2 space-y-2 border-t pt-3">
-                <label class="text-myntra-pink font-bold">Photo Upload & Gallery</label>
-                <input type="file" accept="image/*" onChange={handleFileUpload} class="text-xs" />
-                <div class="flex space-x-2 overflow-x-auto pb-1 custom-scrollbar">
+              <div><label class="text-slate-600 font-semibold">SKU Code *</label><input type="text" required value={form.sku} onChange={e => setForm({ ...form, sku: e.target.value })} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-mono" /></div>
+              
+              <div>
+                <label class="text-slate-600 font-semibold">Brand *</label>
+                {!isAddingBrand ? (
+                  <div class="flex space-x-1 mt-1">
+                    <select value={form.brand} onChange={e => setForm({ ...form, brand: e.target.value })} class="flex-1 bg-slate-50 border border-slate-300 rounded-xl p-2 font-bold">
+                      {brandsList.map(b => <option key={b} value={b}>{b}</option>)}
+                    </select>
+                    <button type="button" onClick={() => setIsAddingBrand(true)} class="bg-pink-100 text-myntra-pink px-2 py-1 rounded-xl text-xs font-bold">+ Custom</button>
+                  </div>
+                ) : (
+                  <div class="flex space-x-1 mt-1">
+                    <input type="text" placeholder="Type Brand..." value={customBrandInput} onChange={e=>setCustomBrandInput(e.target.value)} class="flex-1 bg-slate-50 border border-slate-300 rounded-xl p-2 font-bold" />
+                    <button type="button" onClick={() => setIsAddingBrand(false)} class="text-xs text-slate-400">✕</button>
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label class="text-slate-600 font-semibold">Category *</label>
+                {!isAddingCategory ? (
+                  <div class="flex space-x-1 mt-1">
+                    <select value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} class="flex-1 bg-slate-50 border border-slate-300 rounded-xl p-2 font-bold">
+                      {categoriesList.map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                    <button type="button" onClick={() => setIsAddingCategory(true)} class="bg-pink-100 text-myntra-pink px-2 py-1 rounded-xl text-xs font-bold">+ Custom</button>
+                  </div>
+                ) : (
+                  <div class="flex space-x-1 mt-1">
+                    <input type="text" placeholder="Type Category..." value={customCategoryInput} onChange={e=>setCustomCategoryInput(e.target.value)} class="flex-1 bg-slate-50 border border-slate-300 rounded-xl p-2 font-bold" />
+                    <button type="button" onClick={() => setIsAddingCategory(false)} class="text-xs text-slate-400">✕</button>
+                  </div>
+                )}
+              </div>
+
+              <div><label class="text-slate-600 font-semibold">Fabric Composition</label><input type="text" value={form.fabricType} onChange={e => setForm({ ...form, fabricType: e.target.value })} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5" /></div>
+
+              {/* MULTI-VIDEO TAG SELECTOR */}
+              <div class="sm:col-span-2 space-y-1 border-t pt-2">
+                <label class="text-slate-700 font-bold uppercase">🎥 Tag to Video Numbers (Select One or Multiple):</label>
+                <div class="flex flex-wrap gap-1.5 pt-1">
+                  {(videosList || ['Video no 18', 'Video no 13', 'Video no 14']).map(vid => {
+                    const isSel = selectedVideos.includes(vid);
+                    return (
+                      <button
+                        key={vid}
+                        type="button"
+                        onClick={() => toggleVideoSelection(vid)}
+                        class={`px-2.5 py-1 rounded-full text-xs font-bold transition flex items-center space-x-1 ${isSel ? 'bg-red-600 text-white shadow-xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+                      >
+                        <span>{isSel ? '✓' : '+'}</span>
+                        <span>{vid}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+                <div class="flex space-x-2 pt-1">
+                  <input type="text" placeholder="Add New Video No. (e.g. Video no 21)" value={newVideoInput} onChange={e=>setNewVideoInput(e.target.value)} class="flex-1 bg-slate-50 border border-slate-300 rounded-xl p-2" />
+                  <button type="button" onClick={handleAddNewVideoTag} class="bg-red-50 text-red-600 border border-red-200 font-bold px-3 py-1 rounded-xl">Add Tag</button>
+                </div>
+              </div>
+
+              <div><label class="text-slate-600 font-semibold">Selling Price (₹) *</label><input type="number" required value={form.sellingPrice} onChange={e => setForm({ ...form, sellingPrice: Number(e.target.value) })} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-bold" /></div>
+              <div><label class="text-slate-600 font-semibold">MRP Price (₹)</label><input type="number" value={form.mrpPrice} onChange={e => setForm({ ...form, mrpPrice: Number(e.target.value) })} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5" /></div>
+
+              <div><label class="text-slate-600 font-semibold">Current Stock *</label><input type="number" required value={form.currentStock} onChange={e => setForm({ ...form, currentStock: Number(e.target.value) })} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-bold" /></div>
+              <div><label class="text-slate-600 font-semibold">Unit</label><input type="text" value={form.unit} onChange={e => setForm({ ...form, unit: e.target.value })} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5" /></div>
+
+              <div class="sm:col-span-2"><label class="text-slate-600 font-semibold">Description</label><textarea value={form.description || ''} onChange={e => setForm({ ...form, description: e.target.value })} rows={2} class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 resize-none" /></div>
+
+              {/* PHOTO UPLOAD & GALLERY MANAGERS */}
+              <div class="sm:col-span-2 space-y-2 border-t pt-3">
+                <label class="text-myntra-pink font-bold">Photo Upload & Gallery Management</label>
+                <div class="flex space-x-2">
+                  <input type="file" accept="image/*" onChange={handleFileUpload} class="text-xs" />
+                </div>
+                <div class="flex space-x-1.5">
+                  <input type="url" placeholder="Or paste image URL..." value={newGalleryUrlInput} onChange={e=>setNewGalleryUrlInput(e.target.value)} class="flex-1 bg-slate-50 border border-slate-300 rounded-xl p-2" />
+                  <button type="button" onClick={handleAddUrlToGallery} class="bg-slate-900 text-white font-bold px-3 py-1 rounded-xl">Add URL</button>
+                </div>
+                <div class="flex space-x-2 overflow-x-auto pb-1 custom-scrollbar pt-1">
                   {galleryUrls.map((url, idx) => (
-                    <div key={idx} class="relative">
-                      <img src={url} class="w-12 h-12 rounded-lg object-cover border" />
-                      <button type="button" onClick={() => handleRemoveImageThumbnail(idx)} class="absolute -top-1 -right-1 bg-red-600 text-white rounded-full w-4 h-4 text-[9px] flex items-center justify-center font-bold">✕</button>
+                    <div key={idx} class="relative shrink-0">
+                      <img src={url} class="w-14 h-14 rounded-xl object-cover border border-slate-200" />
+                      <button type="button" onClick={() => handleRemoveImageThumbnail(idx)} class="absolute -top-1.5 -right-1.5 bg-red-600 text-white rounded-full w-5 h-5 text-[10px] flex items-center justify-center font-bold shadow-xs">✕</button>
                     </div>
                   ))}
                 </div>
               </div>
             </div>
 
-            <div class="flex justify-end space-x-2 pt-2 border-t">
-              <button type="button" onClick={onClose} class="px-4 py-2 bg-slate-100 text-xs text-slate-700 rounded-xl">Cancel</button>
-              <button type="submit" class="px-5 py-2 bg-myntra-pink text-white font-bold text-xs rounded-xl shadow-xs">Save Changes</button>
+            <div class="flex justify-between items-center border-t pt-3">
+              <button type="button" onClick={() => setForm({ ...form, isActive: !form.isActive })} class={`px-3 py-1.5 rounded-xl font-bold ${form.isActive ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-500'}`}>
+                {form.isActive ? '👁️ Item Visible' : '🙈 Item Hidden'}
+              </button>
+              <div class="flex space-x-2">
+                <button type="button" onClick={onClose} class="px-4 py-2 bg-slate-100 text-xs text-slate-700 rounded-xl font-bold">Cancel</button>
+                <button type="submit" class="px-6 py-2 bg-myntra-pink text-white font-bold text-xs rounded-xl shadow-xs">Save Changes ✓</button>
+              </div>
             </div>
           </form>
         </div>
       );
     }
 
-    // --- DIY CUSTOMIZER & SUB-ADMIN INVITE & APPROVAL QUEUE ---
-    function OmsWebsiteCustomizerTab({ storeSettings, saveSettingsState, adminUsers, saveAdminUsersState }) {
+    // --- DIY CUSTOMIZER, MASTER ADMIN PIN & VIDEO MANAGER ---
+    function OmsWebsiteCustomizerTab({ storeSettings, saveSettingsState, adminUsers, saveAdminUsersState, videosList, addDynamicVideo, deleteDynamicVideo, currentLoggedInUser }) {
+      const isMasterAdmin = currentLoggedInUser?.role === 'Master Admin';
       const [formData, setFormData] = useState(storeSettings);
+      const [masterPinInput, setMasterPinInput] = useState(storeSettings.adminPin || '1974');
+      const [pinSavedToast, setPinSavedToast] = useState(false);
       const [savedToast, setSavedToast] = useState(false);
       const [inviteLinkCopiedToast, setInviteLinkCopiedToast] = useState(false);
+      const [newVideoInput, setNewVideoInput] = useState('');
 
       const handleSubmit = (e) => {
         e.preventDefault();
         saveSettingsState(formData);
         setSavedToast(true);
         setTimeout(() => setSavedToast(false), 2000);
+      };
+
+      const handleUpdateMasterPin = (e) => {
+        e.preventDefault();
+        if (!masterPinInput || masterPinInput.length < 4) {
+          return alert("Security PIN must be 4 digits!");
+        }
+        const updatedSettings = { ...formData, adminPin: masterPinInput };
+        setFormData(updatedSettings);
+        saveSettingsState(updatedSettings);
+
+        const updatedUsers = adminUsers.map(u => u.role === 'Master Admin' ? { ...u, pin: masterPinInput } : u);
+        saveAdminUsersState(updatedUsers);
+
+        setPinSavedToast(true);
+        setTimeout(() => setPinSavedToast(false), 2500);
+      };
+
+      const handleAddVideo = (e) => {
+        e.preventDefault();
+        if (newVideoInput.trim()) {
+          if (addDynamicVideo) addDynamicVideo(newVideoInput.trim());
+          setNewVideoInput('');
+        }
       };
 
       const handleGenerateInviteLink = () => {
@@ -2098,7 +2615,75 @@
       return (
         <div class="space-y-6 max-w-3xl mx-auto">
           
-          {/* DIY CUSTOMIZER */}
+          {/* 🔒 SUPER MASTER ADMIN SECURITY PIN SETTINGS - VISIBLE ONLY TO MASTER ADMIN */}
+          {isMasterAdmin && (
+          <form onSubmit={handleUpdateMasterPin} class="bg-white border border-slate-200 rounded-3xl p-6 space-y-4 shadow-xs">
+            <div class="flex justify-between border-b pb-3 items-center">
+              <div>
+                <h3 class="font-heading font-extrabold text-lg text-slate-900">🔒 Super Master Admin Security PIN Settings</h3>
+                <p class="text-xs text-slate-500">Change your master 4-digit PIN for instant admin login & store access.</p>
+              </div>
+              {pinSavedToast && <span class="text-xs bg-emerald-100 text-emerald-800 font-bold px-3 py-1 rounded-full">PIN Updated ✓</span>}
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs items-center">
+              <div>
+                <label class="text-slate-700 font-bold">New 4-Digit Master Security PIN *</label>
+                <input 
+                  type="text" 
+                  required 
+                  maxLength="4" 
+                  value={masterPinInput} 
+                  onChange={e=>setMasterPinInput(e.target.value)} 
+                  class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 font-mono font-extrabold text-lg tracking-widest text-center text-slate-900 mt-1" 
+                />
+              </div>
+              <div class="pt-4">
+                <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-xl text-xs shadow-xs">
+                  Update Security PIN ✓
+                </button>
+              </div>
+            </div>
+          </form>
+          )}
+
+          {/* 🎥 DYNAMIC VIDEO COLLECTION MANAGER */}
+          <div class="bg-white border border-slate-200 rounded-3xl p-6 space-y-4 shadow-xs">
+            <div class="border-b pb-3">
+              <h3 class="font-heading font-extrabold text-lg text-slate-900">🎥 Dynamic Video Numbers Collection Manager</h3>
+              <p class="text-xs text-slate-500">Add or remove YouTube video numbers used for fabric catalog tagging.</p>
+            </div>
+
+            <form onSubmit={handleAddVideo} class="flex space-x-2 text-xs">
+              <input 
+                type="text" 
+                placeholder="e.g. Video no 21" 
+                value={newVideoInput} 
+                onChange={e=>setNewVideoInput(e.target.value)} 
+                class="flex-1 bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-bold" 
+              />
+              <button type="submit" class="bg-red-600 hover:bg-red-700 text-white font-bold px-4 py-2.5 rounded-xl shadow-xs">
+                + Add Video Tag
+              </button>
+            </form>
+
+            <div class="flex flex-wrap gap-2 pt-1 text-xs">
+              {(videosList || []).map(vid => (
+                <div key={vid} class="bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-xl flex items-center space-x-2 font-bold text-slate-800">
+                  <span>🎥 {vid}</span>
+                  <button 
+                    type="button" 
+                    onClick={() => { if(confirm(`Delete ${vid}?`)) deleteDynamicVideo(vid); }} 
+                    class="text-red-500 hover:text-red-700 text-xs font-bold"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* DIY STOREFRONT CUSTOMIZER */}
           <form onSubmit={handleSubmit} class="bg-white border border-slate-200 rounded-3xl p-6 space-y-4 shadow-xs">
             <div class="flex justify-between border-b pb-3">
               <h3 class="font-heading font-extrabold text-lg text-slate-900">DIY Website Customizer</h3>
