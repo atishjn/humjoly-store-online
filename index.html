@@ -338,24 +338,86 @@
       const [editingProductRow, setEditingProductRow] = useState(null);
       const [stockAdjustProduct, setStockAdjustProduct] = useState(null);
 
-      useEffect(() => {
-        const savedProds = localStorage.getItem('ht_products');
-        const savedOrders = localStorage.getItem('ht_orders');
-        const savedSettings = localStorage.getItem('ht_settings');
-        const savedBrands = localStorage.getItem('ht_brands');
-        const savedCats = localStorage.getItem('ht_categories');
-        const savedVids = localStorage.getItem('ht_videos');
-        const savedUsers = localStorage.getItem('ht_admin_users');
-        const savedCart = localStorage.getItem('ht_cart');
 
-        if (savedProds) setProducts(JSON.parse(savedProds));
-        if (savedOrders) setOrders(JSON.parse(savedOrders));
-        if (savedSettings) setStoreSettings(JSON.parse(savedSettings));
-        if (savedBrands) setBrandsList(JSON.parse(savedBrands));
-        if (savedCats) setCategoriesList(JSON.parse(savedCats));
-        if (savedVids) setVideosList(JSON.parse(savedVids));
-        if (savedUsers) setAdminUsers(JSON.parse(savedUsers));
-        if (savedCart) setCart(JSON.parse(savedCart));
+      // ─── FIRESTORE REAL-TIME DATA LAYER ───────────────────────────────
+      const getDb = () => firebase.firestore();
+
+      // Seed Firestore on very first load (checks if products collection is empty)
+      const seedFirestoreIfEmpty = async (db) => {
+        try {
+          const snap = await db.collection('humjoly_products').limit(1).get();
+          if (!snap.empty) return; // Already seeded
+
+          const batch = db.batch();
+          INITIAL_PRODUCTS.forEach(p => batch.set(db.collection('humjoly_products').doc(p.id), p));
+          INITIAL_ORDERS.forEach(o => batch.set(db.collection('humjoly_orders').doc(o.id), o));
+          INITIAL_ADMIN_USERS.forEach(u => batch.set(db.collection('humjoly_admin_users').doc(u.id), u));
+          batch.set(db.doc('humjoly_settings/storeConfig'), DEFAULT_STORE_SETTINGS);
+          batch.set(db.doc('humjoly_meta/lists'), {
+            brands: INITIAL_BRANDS,
+            categories: INITIAL_CATEGORIES,
+            videos: INITIAL_VIDEOS
+          });
+          await batch.commit();
+          console.log('Humjoly: Firestore seeded with initial data ✓');
+        } catch (e) {
+          console.error('Firestore seed error:', e);
+        }
+      };
+
+      useEffect(() => {
+        const db = getDb();
+        const unsubs = [];
+
+        // Seed on first load then start listeners
+        seedFirestoreIfEmpty(db);
+
+        // PRODUCTS — real-time listener
+        unsubs.push(db.collection('humjoly_products').onSnapshot(snap => {
+          if (!snap.empty) {
+            setProducts(snap.docs.map(d => ({ ...d.data(), id: d.id })));
+          }
+        }, e => console.error('Products listener:', e)));
+
+        // ORDERS — real-time listener
+        unsubs.push(db.collection('humjoly_orders').orderBy('ie', 'asc').onSnapshot(snap => {
+          if (!snap.empty) {
+            setOrders(snap.docs.map(d => ({ ...d.data(), id: d.id })));
+          }
+        }, () => {
+          // Fallback without orderBy if index missing
+          unsubs.push(db.collection('humjoly_orders').onSnapshot(snap => {
+            if (!snap.empty) setOrders(snap.docs.map(d => ({ ...d.data(), id: d.id })));
+          }));
+        }));
+
+        // SETTINGS — real-time listener
+        unsubs.push(db.doc('humjoly_settings/storeConfig').onSnapshot(snap => {
+          if (snap.exists) setStoreSettings(snap.data());
+        }, e => console.error('Settings listener:', e)));
+
+        // ADMIN USERS — real-time listener
+        unsubs.push(db.collection('humjoly_admin_users').onSnapshot(snap => {
+          if (!snap.empty) {
+            setAdminUsers(snap.docs.map(d => ({ ...d.data(), id: d.id })));
+          }
+        }, e => console.error('Admin users listener:', e)));
+
+        // META (brands, categories, videos) — real-time listener
+        unsubs.push(db.doc('humjoly_meta/lists').onSnapshot(snap => {
+          if (snap.exists) {
+            const data = snap.data();
+            if (data.brands) setBrandsList(data.brands);
+            if (data.categories) setCategoriesList(data.categories);
+            if (data.videos) setVideosList(data.videos);
+          }
+        }, e => console.error('Meta listener:', e)));
+
+        // CART — stays device-local in localStorage
+        const savedCart = localStorage.getItem('ht_cart');
+        if (savedCart) { try { setCart(JSON.parse(savedCart)); } catch(e) {} }
+
+        return () => unsubs.forEach(u => { try { u(); } catch(e) {} });
       }, []);
 
       // SKU DEEP LINKING & POPSTATE HARDWARE BACK BUTTON HANDLER
@@ -417,63 +479,101 @@
         }
       };
 
-      const saveProductsState = (newProducts) => {
-        setProducts(newProducts);
-        localStorage.setItem('ht_products', JSON.stringify(newProducts));
+      // ─── FIRESTORE WRITE HELPERS ────────────────────────────────────────
+
+      const saveProductsState = async (newProducts) => {
+        setProducts(newProducts); // Optimistic UI update
+        const db = getDb();
+        const batch = db.batch();
+        // Upsert all products in new array
+        newProducts.forEach(p => batch.set(db.collection('humjoly_products').doc(p.id), p));
+        // Delete products removed from the array
+        const newIds = new Set(newProducts.map(p => p.id));
+        products.forEach(old => {
+          if (!newIds.has(old.id)) batch.delete(db.collection('humjoly_products').doc(old.id));
+        });
+        try { await batch.commit(); } catch(e) { console.error('saveProducts:', e); }
       };
 
-      const saveOrdersState = (newOrders) => {
-        setOrders(newOrders);
-        localStorage.setItem('ht_orders', JSON.stringify(newOrders));
+      const saveOrdersState = async (newOrders) => {
+        setOrders(newOrders); // Optimistic UI update
+        const db = getDb();
+        const batch = db.batch();
+        // Upsert all orders
+        newOrders.forEach(o => batch.set(db.collection('humjoly_orders').doc(o.id), o));
+        // Delete orders removed from array
+        const newIds = new Set(newOrders.map(o => o.id));
+        orders.forEach(old => {
+          if (!newIds.has(old.id)) batch.delete(db.collection('humjoly_orders').doc(old.id));
+        });
+        try { await batch.commit(); } catch(e) { console.error('saveOrders:', e); }
       };
 
-      const saveSettingsState = (newSettings) => {
-        setStoreSettings(newSettings);
-        localStorage.setItem('ht_settings', JSON.stringify(newSettings));
+      const saveSettingsState = async (newSettings) => {
+        setStoreSettings(newSettings); // Optimistic UI update
+        try {
+          await getDb().doc('humjoly_settings/storeConfig').set(newSettings);
+        } catch(e) { console.error('saveSettings:', e); }
       };
 
-      const saveAdminUsersState = (newUsers) => {
-        setAdminUsers(newUsers);
-        localStorage.setItem('ht_admin_users', JSON.stringify(newUsers));
+      const saveAdminUsersState = async (newUsers) => {
+        setAdminUsers(newUsers); // Optimistic UI update
+        const db = getDb();
+        const batch = db.batch();
+        newUsers.forEach(u => batch.set(db.collection('humjoly_admin_users').doc(u.id), u));
+        const newIds = new Set(newUsers.map(u => u.id));
+        adminUsers.forEach(old => {
+          if (!newIds.has(old.id)) batch.delete(db.collection('humjoly_admin_users').doc(old.id));
+        });
+        try { await batch.commit(); } catch(e) { console.error('saveAdminUsers:', e); }
       };
 
-      const addDynamicBrand = (newBrand) => {
-        if (newBrand && !brandsList.includes(newBrand)) {
-          const updated = [...brandsList, newBrand];
-          setBrandsList(updated);
-          localStorage.setItem('ht_brands', JSON.stringify(updated));
-        }
+      const addDynamicBrand = async (newBrand) => {
+        if (!newBrand || brandsList.includes(newBrand)) return;
+        setBrandsList(prev => [...prev, newBrand]); // Optimistic
+        try {
+          await getDb().doc('humjoly_meta/lists').update({
+            brands: firebase.firestore.FieldValue.arrayUnion(newBrand)
+          });
+        } catch(e) { console.error('addBrand:', e); }
       };
 
-      const addDynamicCategory = (newCat) => {
-        if (newCat && !categoriesList.includes(newCat)) {
-          const updated = [...categoriesList, newCat];
-          setCategoriesList(updated);
-          localStorage.setItem('ht_categories', JSON.stringify(updated));
-        }
+      const addDynamicCategory = async (newCat) => {
+        if (!newCat || categoriesList.includes(newCat)) return;
+        setCategoriesList(prev => [...prev, newCat]); // Optimistic
+        try {
+          await getDb().doc('humjoly_meta/lists').update({
+            categories: firebase.firestore.FieldValue.arrayUnion(newCat)
+          });
+        } catch(e) { console.error('addCategory:', e); }
       };
 
-      const addDynamicVideo = (newVid) => {
-        if (newVid && !videosList.includes(newVid)) {
-          const updated = [...videosList, newVid];
-          setVideosList(updated);
-          localStorage.setItem('ht_videos', JSON.stringify(updated));
-        }
+      const addDynamicVideo = async (newVid) => {
+        if (!newVid || videosList.includes(newVid)) return;
+        setVideosList(prev => [...prev, newVid]); // Optimistic
+        try {
+          await getDb().doc('humjoly_meta/lists').update({
+            videos: firebase.firestore.FieldValue.arrayUnion(newVid)
+          });
+        } catch(e) { console.error('addVideo:', e); }
       };
 
-      const deleteDynamicVideo = (vidToDelete) => {
-        const updated = videosList.filter(v => v !== vidToDelete);
-        setVideosList(updated);
-        localStorage.setItem('ht_videos', JSON.stringify(updated));
+      const deleteDynamicVideo = async (vidToDelete) => {
+        setVideosList(prev => prev.filter(v => v !== vidToDelete)); // Optimistic
+        try {
+          await getDb().doc('humjoly_meta/lists').update({
+            videos: firebase.firestore.FieldValue.arrayRemove(vidToDelete)
+          });
+        } catch(e) { console.error('deleteVideo:', e); }
       };
 
-      const handleDeleteOrder = (orderId) => {
-        const updated = orders.filter(o => o.id !== orderId);
-        saveOrdersState(updated);
-        if (selectedOrderForDrawer && selectedOrderForDrawer.id === orderId) {
-          setSelectedOrderForDrawer(null);
-        }
+      const handleDeleteOrder = async (orderId) => {
+        setOrders(prev => prev.filter(o => o.id !== orderId)); // Optimistic
+        if (selectedOrderForDrawer && selectedOrderForDrawer.id === orderId) setSelectedOrderForDrawer(null);
         setDeletingOrderId(null);
+        try {
+          await getDb().collection('humjoly_orders').doc(orderId).delete();
+        } catch(e) { console.error('deleteOrder:', e); }
       };
 
       const addToCart = (product, qty = 1) => {
