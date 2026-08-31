@@ -1276,7 +1276,7 @@
           )}
 
           {/* MAIN PDP MODAL CARD */}
-          <div class="bg-white border border-slate-200 rounded-2xl md:rounded-3xl max-w-4xl w-full p-4 sm:p-6 md:p-8 space-y-6 shadow-2xl relative my-auto max-h-[92vh] flex flex-col overflow-y-auto custom-scrollbar">
+          <div class="bg-white border border-slate-200 rounded-2xl md:rounded-3xl max-w-4xl w-full p-4 sm:p-6 md:p-8 space-y-6 shadow-2xl relative my-auto max-h-[90vh] md:max-h-[92vh] flex flex-col overflow-y-auto custom-scrollbar pb-24 md:pb-8">
             
             {/* TOP MOBILE FRIENDLY NAVIGATION HEADER */}
             <div class="flex items-center justify-between border-b border-slate-100 pb-3">
@@ -1382,44 +1382,51 @@
                   </div>
                 </div>
 
-                {/* TAILORING STITCHING REQUIREMENT GUIDE & PRESETS (MANTIRE / LIBAS STYLE) */}
+                {/* STREAMLINED TAILORING REQUIREMENT SELECTION (DROPDOWN + CUSTOM INPUT) */}
                 <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
                   <div class="flex justify-between items-center">
                     <span class="text-xs font-extrabold text-slate-900 uppercase tracking-wider">
-                      📐 Select Stitching Requirement:
+                      📐 Select Garment Type / Length:
                     </span>
                     <span class="text-xs font-bold text-myntra-pink">
                       {selectedMeters} {product.unit}
                     </span>
                   </div>
 
-                  <div class="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
-                    {presets.map(p => (
-                      <button
-                        key={p.key}
-                        onClick={() => handlePresetSelect(p)}
-                        class={`py-2 px-2.5 rounded-xl text-[11px] font-bold border transition text-left flex items-center justify-between ${selectedPreset === p.key ? 'bg-slate-900 text-white border-slate-900 shadow-xs' : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300'}`}
-                      >
-                        <span class="truncate">{p.label}</span>
-                      </button>
-                    ))}
-                  </div>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <select
+                      value={selectedPreset}
+                      onChange={(e) => {
+                        const key = e.target.value;
+                        const match = presets.find(p => p.key === key);
+                        if (match) handlePresetSelect(match);
+                      }}
+                      class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold text-slate-900 focus:border-myntra-pink shadow-xs cursor-pointer"
+                    >
+                      {presets.map(p => (
+                        <option key={p.key} value={p.key}>
+                          {p.label} {p.meters ? `(${p.meters} ${product.unit})` : ''}
+                        </option>
+                      ))}
+                    </select>
 
-                  {/* CUSTOM METERS INPUT */}
-                  {selectedPreset === 'Custom' && (
-                    <div class="flex items-center space-x-2 pt-1">
-                      <span class="text-xs font-bold text-slate-600">Enter Length ({product.unit}):</span>
+                    <div class="flex items-center space-x-2">
+                      <span class="text-xs font-bold text-slate-600 shrink-0">Custom (M):</span>
                       <input 
                         type="number"
                         step="0.10"
                         min="0.5"
                         max="20"
                         value={customInput}
-                        onChange={e => handleCustomMeterChange(e.target.value)}
-                        class="w-24 bg-white border border-slate-300 rounded-xl px-3 py-1.5 text-xs font-bold font-mono text-slate-900 focus:border-myntra-pink"
+                        onChange={e => {
+                          setSelectedPreset('Custom');
+                          handleCustomMeterChange(e.target.value);
+                        }}
+                        placeholder="e.g. 1.60"
+                        class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold font-mono text-slate-900 focus:border-myntra-pink shadow-xs"
                       />
                     </div>
-                  )}
+                  </div>
 
                   {/* CALCULATED ESTIMATE SUMMARY */}
                   <div class="flex justify-between items-center pt-2 border-t border-slate-200 text-xs">
@@ -1427,6 +1434,120 @@
                     <span class="font-extrabold text-slate-900 text-base font-heading">₹{totalPrice}</span>
                   </div>
                 </div>
+
+                {/* FABRIC REQUIREMENT SIZE CHART (COLLAPSIBLE / ACCORDION) */}
+                <details class="border border-slate-200 rounded-2xl overflow-hidden text-xs group bg-white shadow-xs">
+                  <summary class="bg-slate-100 px-3.5 py-2.5 font-bold text-slate-800 uppercase tracking-wider text-[10px] cursor-pointer flex justify-between items-center select-none">
+                    <span class="flex items-center space-x-1.5">
+                      <span>📏 Standard Fabric Size Guide & Requirement Chart</span>
+                    </span>
+                    <span class="text-slate-400 text-xs group-open:rotate-180 transition">▼</span>
+                  </summary>
+
+                  <div class="p-3 space-y-4 text-slate-700 bg-slate-50/50">
+                    
+                    {/* SHIRT */}
+                    <div>
+                      <div class="font-extrabold text-slate-900 border-b pb-1 mb-1.5 flex items-center space-x-1">
+                        <span>👔 SHIRT FABRIC REQUIREMENT</span>
+                      </div>
+                      <table class="w-full text-left text-[11px] border border-slate-200 rounded-lg overflow-hidden bg-white">
+                        <thead class="bg-slate-100 font-bold text-slate-700">
+                          <tr>
+                            <th class="p-1.5 border-b">Height</th>
+                            <th class="p-1.5 border-b">Fabric (147 cm / 58")</th>
+                            <th class="p-1.5 border-b">Fabric (89 cm / 36")</th>
+                          </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                          <tr>
+                            <td class="p-1.5">Up to 5′ 10″ (182.85 cm)</td>
+                            <td class="p-1.5 font-bold text-myntra-pink">1.60 Meter</td>
+                            <td class="p-1.5">2.40 Meter</td>
+                          </tr>
+                          <tr>
+                            <td class="p-1.5">5′ 10″ to 6′ (182.88 cm)</td>
+                            <td class="p-1.5 font-bold text-myntra-pink">1.70 Meter</td>
+                            <td class="p-1.5">2.50 Meter</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* PANT / TROUSER */}
+                    <div>
+                      <div class="font-extrabold text-slate-900 border-b pb-1 mb-1.5 flex items-center space-x-1">
+                        <span>👖 PANT / TROUSER FABRIC REQUIREMENT</span>
+                      </div>
+                      <table class="w-full text-left text-[11px] border border-slate-200 rounded-lg overflow-hidden bg-white">
+                        <thead class="bg-slate-100 font-bold text-slate-700">
+                          <tr>
+                            <th class="p-1.5 border-b">Height</th>
+                            <th class="p-1.5 border-b">Fabric (147 cm / 58" width)</th>
+                          </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                          <tr>
+                            <td class="p-1.5">Up to 5′ 10″ (182.85 cm)</td>
+                            <td class="p-1.5 font-bold text-myntra-pink">1.25 Meter</td>
+                          </tr>
+                          <tr>
+                            <td class="p-1.5">5′ 10″ to 6′ (182.88 cm)</td>
+                            <td class="p-1.5 font-bold text-myntra-pink">1.30 Meter</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* BANDI / BLAZER / SUITS */}
+                    <div>
+                      <div class="font-extrabold text-slate-900 border-b pb-1 mb-1.5 flex items-center space-x-1">
+                        <span>🧥 JACKET, BLAZER & SUITS</span>
+                      </div>
+                      <table class="w-full text-left text-[11px] border border-slate-200 rounded-lg overflow-hidden bg-white">
+                        <thead class="bg-slate-100 font-bold text-slate-700">
+                          <tr>
+                            <th class="p-1.5 border-b">Garment</th>
+                            <th class="p-1.5 border-b">Height</th>
+                            <th class="p-1.5 border-b">Fabric (147 cm width)</th>
+                          </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                          <tr>
+                            <td class="p-1.5 font-semibold">Bandi / Modi Jacket</td>
+                            <td class="p-1.5">Up to 6′ Feet</td>
+                            <td class="p-1.5 font-bold text-myntra-pink">1.00 Meter</td>
+                          </tr>
+                          <tr>
+                            <td class="p-1.5 font-semibold">Blazer</td>
+                            <td class="p-1.5">Up to 6′ Feet</td>
+                            <td class="p-1.5 font-bold text-myntra-pink">2.00 Meter</td>
+                          </tr>
+                          <tr>
+                            <td class="p-1.5 font-semibold">Two-Piece Suit</td>
+                            <td class="p-1.5">Up to 5′ 10″</td>
+                            <td class="p-1.5 font-bold text-myntra-pink">3.00 Meter</td>
+                          </tr>
+                          <tr>
+                            <td class="p-1.5 font-semibold">Two-Piece Suit</td>
+                            <td class="p-1.5">5′ 10″ to 6′</td>
+                            <td class="p-1.5 font-bold text-myntra-pink">3.25 Meter</td>
+                          </tr>
+                          <tr>
+                            <td class="p-1.5 font-semibold">Three-Piece Suit</td>
+                            <td class="p-1.5">Up to 6′ Feet</td>
+                            <td class="p-1.5 font-bold text-myntra-pink">3.75 Meter</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+
+                    <p class="text-[10px] text-slate-400 italic">
+                      * Note: Please consult your master tailor for exact length requirement based on individual build and styling requirements.
+                    </p>
+
+                  </div>
+                </details>
 
                 {/* FABRIC SPECIFICATIONS TABLE */}
                 <div class="border border-slate-200 rounded-2xl overflow-hidden text-xs">
@@ -2330,8 +2451,17 @@
         saveProductsState([cloned, ...products]);
       };
 
-      const deleteProductRow = (productId) => {
-        if (confirm("Archive this fabric item?")) saveProductsState(products.filter(p => p.id !== productId));
+      const deleteProductRow = async (productId) => {
+        if (confirm("Archive/Delete this fabric item permanently from cloud database?")) {
+          const db = getDb();
+          try {
+            await db.collection('humjoly_products').doc(productId).delete();
+            setProducts(prev => prev.filter(p => p.id !== productId));
+          } catch(e) {
+            console.error("Error deleting product document:", e);
+            alert("Failed to delete product from database: " + e.message);
+          }
+        }
       };
 
       return (
